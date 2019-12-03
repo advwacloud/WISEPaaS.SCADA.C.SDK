@@ -219,6 +219,8 @@ void getCredentialFromDCCS(){
 		struct string s;
 		curlInitString(&s);
 
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteFunc);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
