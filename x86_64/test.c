@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.ScadaId = "c9851920-ca7f-4cfd-964a-1969aef958f6";
+	options.ScadaId = "1cd2fd22-9eb6-4c6e-9c59-73c4dd4088ad";
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "9b03e5524c70b6e4c503173c6553abrh";
+			options.DCCS.CredentialKey = "442a41baee49f2c845155ffa9668d52w";
 			options.DCCS.APIUrl = "https://api-dccs.wise-paas.com/";
 			break;
 
@@ -146,6 +146,9 @@ int main(int argc, char *argv[]) {
     char *simDevName = NULL;
     char *simValue = NULL;
 
+    bool arraySample = true;
+    int array_size = 3; 
+    
     for (int i = 0; i < device_num; i++){
         for ( int j = 0; j < analog_tag_num; j++ )
         {
@@ -153,7 +156,11 @@ int main(int argc, char *argv[]) {
             analogTag[j].Name = simTagName;    
             analogTag[j].Description = "description_update";          
             analogTag[j].ReadOnly = false;
-            // analogTag[j].ArraySize = 0;
+
+	    if(arraySample){
+            	analogTag[j].ArraySize = array_size;   /* used for array tag */
+	    }
+
             // analogTag[j].AlarmStatus = false;
             // analogTag[j].SpanHigh = 1000;
             // analogTag[j].SpanLow = 0;
@@ -230,6 +237,7 @@ int main(int argc, char *argv[]) {
 
     PTEDGE_DEVICE_STRUCT data_device = malloc(device_num * sizeof(struct EDGE_DEVICE_STRUCT));
     PTEDGE_TAG_STRUCT data_tag = malloc(tag_num * sizeof(struct EDGE_TAG_STRUCT));
+    PTEDGE_ARRAY_TAG_STRUCT data_array_tag = malloc(3 * sizeof(struct EDGE_ARRAY_TAG_STRUCT));
 
 /* Use SDK API */
     Constructor(options);
@@ -241,6 +249,7 @@ int main(int argc, char *argv[]) {
     SendDeviceStatus(status);
  
     int value = 0; 
+
     while(1){
         if(value >=1000){value =0;}
         value ++;
@@ -251,9 +260,22 @@ int main(int argc, char *argv[]) {
 
                 asprintf(&simTagName, "%s_%d", "TagName_ana", j);
                 data_tag[j].Name = simTagName;
+                
+		if(arraySample){ /* array tag sample */
 
-                asprintf(&simValue, "%d", value);
-                data_tag[j].Value = simValue;
+		   for(int k = 0; k< array_size; k++){
+		      asprintf(&simValue, "%d", value);
+		      data_array_tag[k].Index = k;
+	              data_array_tag[k].Value = simValue;
+	           }
+		   data_tag[j].ArraySize = array_size;
+		   data_tag[j].ArrayList = data_array_tag;
+		}
+		else { /* normal tag sample */
+		   asprintf(&simValue, "%d", value);
+	           data_tag[j].Value = simValue;
+		}
+		
             }
             data_device[i].TagNumber = tag_num;
             data_device[i].TagList = data_tag;

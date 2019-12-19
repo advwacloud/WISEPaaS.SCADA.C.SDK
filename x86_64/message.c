@@ -256,6 +256,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
     subJson_d = cJSON_CreateObject();
 
     cJSON * subJson_scada_dev = NULL;
+    cJSON * subJson_scada_array = NULL;
 
     if(data.DeviceList != NULL){
 
@@ -266,7 +267,20 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
 
                 if(data.DeviceList[idev].TagList[itag].Name && data.DeviceList[idev].TagList[itag].Value){
                     cJSON_AddStringToObject(subJson_scada_dev, data.DeviceList[idev].TagList[itag].Name, data.DeviceList[idev].TagList[itag].Value);
-                }       
+                }
+
+		        if(data.DeviceList[idev].TagList[itag].Name && data.DeviceList[idev].TagList[itag].ArrayList){
+
+                    subJson_scada_array= cJSON_CreateObject();
+                    for(int iarray = 0; iarray < data.DeviceList[idev].TagList[itag].ArraySize; iarray ++){
+
+                        char *idx = NULL;
+                        asprintf(&idx, "%d", data.DeviceList[idev].TagList[itag].ArrayList[iarray].Index);
+
+                        cJSON_AddStringToObject(subJson_scada_array, idx, data.DeviceList[idev].TagList[itag].ArrayList[iarray].Value);
+                    }
+                    cJSON_AddItemToObject(subJson_scada_dev, data.DeviceList[idev].TagList[itag].Name, subJson_scada_array);
+                }        
             }
 
             cJSON_AddItemToObject(subJson_d, data.DeviceList[idev].Id, subJson_scada_dev);
@@ -522,7 +536,7 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
 
             cJSON_AddStringToObject(subJson_scada_dev_name, "Name", config.DeviceList[idev].Name);
             cJSON_AddStringToObject(subJson_scada_dev_name, "Type", config.DeviceList[idev].Type);
-            cJSON_AddStringToObject(subJson_scada_dev_name, "Dsc", config.DeviceList[idev].Description);
+            cJSON_AddStringToObject(subJson_scada_dev_name, "Desc", config.DeviceList[idev].Description);
             cJSON_AddStringToObject(subJson_scada_dev_name, "IP", config.DeviceList[idev].IP);
             cJSON_AddNumberToObject(subJson_scada_dev_name, "Port", config.DeviceList[idev].Port); 
             cJSON_AddNumberToObject(subJson_scada_dev_name, "PNbr", config.DeviceList[idev].ComPortNumber);
