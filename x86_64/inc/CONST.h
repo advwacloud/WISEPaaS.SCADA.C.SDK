@@ -15,8 +15,9 @@ const char *InsertSql =  "INSERT INTO Data (message) VALUES(%s)";
 const char *QuerysSql = "SELECT * FROM Data LIMIT %d;";
 const char *DeleteSql = "DELETE FROM Data WHERE id IN %d";
 
-const int hbt_sec = 1;
-const int rcov_sec = 2;
+//const int hbt_sec = 1;
+const int rcov_sec = 1;
+const int rcov_limit = 10;
 
 const char *WirteValueCommand = "WV";
 const char *WriteConfigCommand = "WC";

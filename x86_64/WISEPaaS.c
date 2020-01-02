@@ -30,7 +30,7 @@ char *_insertSql = NULL;
 char *_querySql = NULL;
 char *_deleteSql = NULL;
 
-int limit = 1;
+//int limit = 10;
 
 /* prototypes */
 void* heartbeat_proc(void *secs);
@@ -546,7 +546,7 @@ void* recover_proc(void *secs)
 			nsleep(seconds*1000);
 			//sleep(seconds);
 
-			asprintf(&_querySql, QuerysSql, limit);
+			asprintf(&_querySql, QuerysSql, rcov_limit);
 			sqlite3_get_table(db , _querySql, &result , &rows, &cols, NULL);
 
 			char *trans = NULL; // base64 test
@@ -572,7 +572,7 @@ void* recover_proc(void *secs)
 				printf("\n");
 			}
 
-			asprintf(&_deleteSql, DeleteSql, limit);
+			asprintf(&_deleteSql, DeleteSql, rcov_limit);
 			sqlite3_get_table(db , _deleteSql, &result , &rows, &cols, NULL);
 			free(trans);
 		}
