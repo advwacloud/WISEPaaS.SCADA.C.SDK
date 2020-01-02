@@ -326,10 +326,12 @@ void Constructor(TOPTION_STRUCT query) {
 	mosquitto_message_callback_set(mosq, message_callback);
 
     int rc = 0;
-    rc = pthread_create(&thread_hbt_id, NULL, heartbeat_proc, (void*)(size_t) hbt_sec);
-    if(rc){
-        printf("=== Error Creating heartbeat thread\n");
-    } 
+	if(option.Heartbeat >= 0){
+		rc = pthread_create(&thread_hbt_id, NULL, heartbeat_proc, (void*)(size_t) option.Heartbeat);
+		if(rc){
+			printf("=== Error Creating heartbeat thread\n");
+		} 
+	}
 	rc = pthread_create(&thread_rcov_id, NULL, recover_proc, (void*)(size_t) rcov_sec);
     if(rc){
         printf("=== Error Creating recover thread\n");
