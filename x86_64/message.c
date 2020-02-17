@@ -255,35 +255,35 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
     cJSON * subJson_d = NULL;                        
     subJson_d = cJSON_CreateObject();
 
-    cJSON * subJson_scada_dev = NULL;
-    cJSON * subJson_scada_array = NULL;
+    cJSON * subJson_node_dev = NULL;
+    cJSON * subJson_node_array = NULL;
 
     if(data.DeviceList != NULL){
 
         for(int idev = 0; idev< data.DeviceNumber; idev++){
 
-            subJson_scada_dev= cJSON_CreateObject();
+            subJson_node_dev= cJSON_CreateObject();
             for(int itag = 0; itag< data.DeviceList[idev].TagNumber; itag++){
 
                 if(data.DeviceList[idev].TagList[itag].Name && data.DeviceList[idev].TagList[itag].Value){
-                    cJSON_AddStringToObject(subJson_scada_dev, data.DeviceList[idev].TagList[itag].Name, data.DeviceList[idev].TagList[itag].Value);
+                    cJSON_AddStringToObject(subJson_node_dev, data.DeviceList[idev].TagList[itag].Name, data.DeviceList[idev].TagList[itag].Value);
                 }
 
 		        if(data.DeviceList[idev].TagList[itag].Name && data.DeviceList[idev].TagList[itag].ArrayList){
 
-                    subJson_scada_array= cJSON_CreateObject();
+                    subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].TagList[itag].ArraySize; iarray ++){
 
                         char *idx = NULL;
                         asprintf(&idx, "%d", data.DeviceList[idev].TagList[itag].ArrayList[iarray].Index);
 
-                        cJSON_AddStringToObject(subJson_scada_array, idx, data.DeviceList[idev].TagList[itag].ArrayList[iarray].Value);
+                        cJSON_AddStringToObject(subJson_node_array, idx, data.DeviceList[idev].TagList[itag].ArrayList[iarray].Value);
                     }
-                    cJSON_AddItemToObject(subJson_scada_dev, data.DeviceList[idev].TagList[itag].Name, subJson_scada_array);
+                    cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].TagList[itag].Name, subJson_node_array);
                 }        
             }
 
-            cJSON_AddItemToObject(subJson_d, data.DeviceList[idev].Id, subJson_scada_dev);
+            cJSON_AddItemToObject(subJson_d, data.DeviceList[idev].Id, subJson_node_dev);
         }
     }
 
@@ -299,7 +299,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
     return 0;
 }
 
-int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload, int hbt){
+int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **payload, int hbt){
 
     cJSON * pJsonRoot = NULL;
     char * ts = _getTime();
@@ -309,18 +309,18 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
     cJSON * subJson_d = NULL;                        
     subJson_d = cJSON_CreateObject();
 
-    cJSON * subJson_scada = NULL;
-    subJson_scada = cJSON_CreateObject();
+    cJSON * subJson_node = NULL;
+    subJson_node = cJSON_CreateObject();
 
-    cJSON * subJson_scada_id = NULL;
-    subJson_scada_id = cJSON_CreateObject();
+    cJSON * subJson_node_id = NULL;
+    subJson_node_id = cJSON_CreateObject();
 
-    cJSON * subJson_scada_dev = NULL;
-    subJson_scada_dev = cJSON_CreateObject();
+    cJSON * subJson_node_dev = NULL;
+    subJson_node_dev = cJSON_CreateObject();
 
-    cJSON * subJson_scada_dev_name = NULL;
+    cJSON * subJson_node_dev_name = NULL;
 
-    cJSON * subJson_scada_dev_name_tag = NULL;
+    cJSON * subJson_node_dev_name_tag = NULL;
 
     cJSON * subJson_tag_ana = NULL;
     cJSON * subJson_tag_dis = NULL;
@@ -332,8 +332,8 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
 
         for(int idev = 0; idev< config.DeviceNumber; idev++){
 
-            subJson_scada_dev_name = cJSON_CreateObject();
-            subJson_scada_dev_name_tag = cJSON_CreateObject();
+            subJson_node_dev_name = cJSON_CreateObject();
+            subJson_node_dev_name_tag = cJSON_CreateObject();
 
             for(int iana = 0; iana< config.DeviceList[idev].AnalogNumber; iana++){
 
@@ -414,7 +414,7 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
                 }
 
                 if(config.DeviceList[idev].AnalogTagList[iana].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].AnalogTagList[iana].Name, subJson_tag_ana);
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].AnalogTagList[iana].Name, subJson_tag_ana);
                 }  
             }
             for(int idis = 0; idis< config.DeviceList[idev].DiscreteNumber; idis++){
@@ -501,7 +501,7 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
                 }
 
                 if(config.DeviceList[idev].DiscreteTagList[idis].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].DiscreteTagList[idis].Name, subJson_tag_dis);  
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].DiscreteTagList[idis].Name, subJson_tag_dis);  
                 }
             }
             for(int itxt = 0; itxt< config.DeviceList[idev].TextNumber; itxt++){
@@ -530,51 +530,51 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
                 //}
 
                 if(config.DeviceList[idev].TextTagList[itxt].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].TextTagList[itxt].Name, subJson_tag_txt);  
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].TextTagList[itxt].Name, subJson_tag_txt);  
                 }
             }
 
-            cJSON_AddStringToObject(subJson_scada_dev_name, "Name", config.DeviceList[idev].Name);
-            cJSON_AddStringToObject(subJson_scada_dev_name, "Type", config.DeviceList[idev].Type);
-            cJSON_AddStringToObject(subJson_scada_dev_name, "Desc", config.DeviceList[idev].Description);
-            cJSON_AddStringToObject(subJson_scada_dev_name, "IP", config.DeviceList[idev].IP);
-            cJSON_AddNumberToObject(subJson_scada_dev_name, "Port", config.DeviceList[idev].Port); 
-            cJSON_AddNumberToObject(subJson_scada_dev_name, "PNbr", config.DeviceList[idev].ComPortNumber);
+            cJSON_AddStringToObject(subJson_node_dev_name, "Name", config.DeviceList[idev].Name);
+            cJSON_AddStringToObject(subJson_node_dev_name, "Type", config.DeviceList[idev].Type);
+            cJSON_AddStringToObject(subJson_node_dev_name, "Desc", config.DeviceList[idev].Description);
+            cJSON_AddStringToObject(subJson_node_dev_name, "IP", config.DeviceList[idev].IP);
+            cJSON_AddNumberToObject(subJson_node_dev_name, "Port", config.DeviceList[idev].Port); 
+            cJSON_AddNumberToObject(subJson_node_dev_name, "PNbr", config.DeviceList[idev].ComPortNumber);
 
-            cJSON_AddItemToObject(subJson_scada_dev, config.DeviceList[idev].Id, subJson_scada_dev_name);  
-            cJSON_AddItemToObject(subJson_scada_dev_name, "Tag", subJson_scada_dev_name_tag);       
+            cJSON_AddItemToObject(subJson_node_dev, config.DeviceList[idev].Id, subJson_node_dev_name);  
+            cJSON_AddItemToObject(subJson_node_dev_name, "Tag", subJson_node_dev_name_tag);       
         }
-        //cJSON_Delete(subJson_scada_dev_name);
-        cJSON_AddItemToObject(subJson_scada_id, "Device", subJson_scada_dev);
+        //cJSON_Delete(subJson_node_dev_name);
+        cJSON_AddItemToObject(subJson_node_id, "Device", subJson_node_dev);
     }
 
     //printf("[debug]: %s %s %s\n", config.PrimaryIP, config.BackupIP, config.Description);
 
     if(config.Name){
-        cJSON_AddStringToObject(subJson_scada_id, "Name", config.Name);
+        cJSON_AddStringToObject(subJson_node_id, "Name", config.Name);
     }
     if(config.Description){
-        cJSON_AddStringToObject(subJson_scada_id, "Desc", config.Description);
+        cJSON_AddStringToObject(subJson_node_id, "Desc", config.Description);
     }
     if(config.PrimaryIP){
-        cJSON_AddStringToObject(subJson_scada_id, "PIP", config.PrimaryIP);
+        cJSON_AddStringToObject(subJson_node_id, "PIP", config.PrimaryIP);
     }
     if(config.BackupIP){
-        cJSON_AddStringToObject(subJson_scada_id, "BIP", config.BackupIP);
+        cJSON_AddStringToObject(subJson_node_id, "BIP", config.BackupIP);
     }
 
-    cJSON_AddNumberToObject(subJson_scada_id, "PPort", config.PrimaryPort); 
-    cJSON_AddNumberToObject(subJson_scada_id, "BPort", config.BackupPort); 
-    cJSON_AddNumberToObject(subJson_scada_id, "Type", config.Type);
-    cJSON_AddNumberToObject(subJson_scada_id, "Hbt", hbt);
+    cJSON_AddNumberToObject(subJson_node_id, "PPort", config.PrimaryPort); 
+    cJSON_AddNumberToObject(subJson_node_id, "BPort", config.BackupPort); 
+    cJSON_AddNumberToObject(subJson_node_id, "Type", config.Type);
+    cJSON_AddNumberToObject(subJson_node_id, "Hbt", hbt);
 
-    // subJson_scada
-    cJSON_AddItemToObject(subJson_scada, config.Id, subJson_scada_id);
+    // subJson_node
+    cJSON_AddItemToObject(subJson_node, config.Id, subJson_node_id);
 
     // subJson_d
     cJSON_AddNumberToObject(subJson_d, "Action", action);
 
-    cJSON_AddItemToObject(subJson_d, "Scada", subJson_scada);
+    cJSON_AddItemToObject(subJson_d, "Scada", subJson_node);
 
     // pJsonRoot
     cJSON_AddItemToObject(pJsonRoot, "d", subJson_d);
@@ -583,19 +583,12 @@ int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **
     // cJSON_Print cJSON_PrintUnformatted
     *payload = cJSON_PrintUnformatted(pJsonRoot);
 
-    //printf("%s\n",cJSON_Print(pJsonRoot));
-
-    //cJSON_Delete(subJson_scada_dev_name);
-    //cJSON_Delete(subJson_scada_dev);
-    //cJSON_Delete(subJson_scada_id);
-    //cJSON_Delete(subJson_scada);
-    //cJSON_Delete(subJson_d);
     cJSON_Delete(pJsonRoot);
 
     return 0;
 }
 
-int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload){
+int ConvertDeleteConfig(int action, TNODE_CONFIG_STRUCT config, char **payload){
 
     cJSON * pJsonRoot = NULL;
     char * ts = _getTime();
@@ -605,18 +598,18 @@ int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload)
     cJSON * subJson_d = NULL;                        
     subJson_d = cJSON_CreateObject();
 
-    cJSON * subJson_scada = NULL;
-    subJson_scada = cJSON_CreateObject();
+    cJSON * subJson_node = NULL;
+    subJson_node = cJSON_CreateObject();
 
-    cJSON * subJson_scada_id = NULL;
-    subJson_scada_id = cJSON_CreateObject();
+    cJSON * subJson_node_id = NULL;
+    subJson_node_id = cJSON_CreateObject();
 
-    cJSON * subJson_scada_dev = NULL;
-    subJson_scada_dev = cJSON_CreateObject();
+    cJSON * subJson_node_dev = NULL;
+    subJson_node_dev = cJSON_CreateObject();
 
-    cJSON * subJson_scada_dev_name = NULL;
+    cJSON * subJson_node_dev_name = NULL;
 
-    cJSON * subJson_scada_dev_name_tag = NULL;
+    cJSON * subJson_node_dev_name_tag = NULL;
 
     cJSON * subJson_tag_ana = NULL;
     cJSON * subJson_tag_dis = NULL;
@@ -628,15 +621,15 @@ int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload)
 
         for(int idev = 0; idev< config.DeviceNumber; idev++){
 
-            subJson_scada_dev_name = cJSON_CreateObject();
-            subJson_scada_dev_name_tag = cJSON_CreateObject();
+            subJson_node_dev_name = cJSON_CreateObject();
+            subJson_node_dev_name_tag = cJSON_CreateObject();
 
             for(int iana = 0; iana< config.DeviceList[idev].AnalogNumber; iana++){
 
                 subJson_tag_ana = cJSON_CreateObject();
 
                 if(config.DeviceList[idev].AnalogTagList[iana].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].AnalogTagList[iana].Name, subJson_tag_ana);
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].AnalogTagList[iana].Name, subJson_tag_ana);
                 }  
             }
             for(int idis = 0; idis< config.DeviceList[idev].DiscreteNumber; idis++){
@@ -644,7 +637,7 @@ int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload)
                 subJson_tag_dis = cJSON_CreateObject();
 
                 if(config.DeviceList[idev].DiscreteTagList[idis].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].DiscreteTagList[idis].Name, subJson_tag_dis);  
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].DiscreteTagList[idis].Name, subJson_tag_dis);  
                 }
             }
             for(int itxt = 0; itxt< config.DeviceList[idev].TextNumber; itxt++){
@@ -652,32 +645,30 @@ int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload)
                 subJson_tag_txt = cJSON_CreateObject();
 
                 if(config.DeviceList[idev].TextTagList[itxt].Name){
-                    cJSON_AddItemToObject(subJson_scada_dev_name_tag, config.DeviceList[idev].TextTagList[itxt].Name, subJson_tag_txt);  
+                    cJSON_AddItemToObject(subJson_node_dev_name_tag, config.DeviceList[idev].TextTagList[itxt].Name, subJson_tag_txt);  
                 }
             }
 
-            cJSON_AddStringToObject(subJson_scada_dev_name, "Name", config.DeviceList[idev].Name);
+            cJSON_AddStringToObject(subJson_node_dev_name, "Name", config.DeviceList[idev].Name);
 
-            cJSON_AddItemToObject(subJson_scada_dev, config.DeviceList[idev].Id, subJson_scada_dev_name);  
-            cJSON_AddItemToObject(subJson_scada_dev_name, "Tag", subJson_scada_dev_name_tag);       
+            cJSON_AddItemToObject(subJson_node_dev, config.DeviceList[idev].Id, subJson_node_dev_name);  
+            cJSON_AddItemToObject(subJson_node_dev_name, "Tag", subJson_node_dev_name_tag);       
         }
-        //cJSON_Delete(subJson_scada_dev_name);
-        cJSON_AddItemToObject(subJson_scada_id, "Device", subJson_scada_dev);
+        //cJSON_Delete(subJson_node_dev_name);
+        cJSON_AddItemToObject(subJson_node_id, "Device", subJson_node_dev);
     }
-
-    //printf("[debug]: %s %s %s\n", config.PrimaryIP, config.BackupIP, config.Description);
 
     if(config.Name){
-        cJSON_AddStringToObject(subJson_scada_id, "Name", config.Name);
+        cJSON_AddStringToObject(subJson_node_id, "Name", config.Name);
     }
 
-    // subJson_scada
-    cJSON_AddItemToObject(subJson_scada, config.Id, subJson_scada_id);
+    // subJson_node
+    cJSON_AddItemToObject(subJson_node, config.Id, subJson_node_id);
 
     // subJson_d
     cJSON_AddNumberToObject(subJson_d, "Action", action);
 
-    cJSON_AddItemToObject(subJson_d, "Scada", subJson_scada);
+    cJSON_AddItemToObject(subJson_d, "Scada", subJson_node);
 
     // pJsonRoot
     cJSON_AddItemToObject(pJsonRoot, "d", subJson_d);
@@ -686,13 +677,6 @@ int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload)
     // cJSON_Print cJSON_PrintUnformatted
     *payload = cJSON_PrintUnformatted(pJsonRoot);
 
-    //printf("%s\n",cJSON_Print(pJsonRoot));
-
-    //cJSON_Delete(subJson_scada_dev_name);
-    //cJSON_Delete(subJson_scada_dev);
-    //cJSON_Delete(subJson_scada_id);
-    //cJSON_Delete(subJson_scada);
-    //cJSON_Delete(subJson_d);
     cJSON_Delete(pJsonRoot);
 
     return 0;

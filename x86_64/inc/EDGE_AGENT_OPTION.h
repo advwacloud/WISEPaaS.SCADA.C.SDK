@@ -49,7 +49,7 @@ typedef struct DCCS_OPTION_STRUCT{
 typedef struct OPTION_STRUCT {
 	bool AutoReconnect;
 	int ReconnectInterval;
-	char * ScadaId;
+	char * NodeId;
 	char * DeviceId;
 	EdgeType Type;
 	int Heartbeat;

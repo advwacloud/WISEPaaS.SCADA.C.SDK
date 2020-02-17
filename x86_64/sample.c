@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     void (*Constructor)(TOPTION_STRUCT);
     void (*Connect)();
     void (*Disconnect)();
-    int (*UploadConfig)(ActionType, TSCADA_CONFIG_STRUCT);
+    int (*UploadConfig)(ActionType, TNODE_CONFIG_STRUCT);
     int (*SendData)(TEDGE_DATA_STRUCT);
     int (*SendDeviceStatus)(TEDGE_DEVICE_STATUS_STRUCT);
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.ScadaId = "1cd2fd22-9eb6-4c6e-9c59-73c4dd4088ad"; // your scada Id
+	options.NodeId = "1cd2fd22-9eb6-4c6e-9c59-73c4dd4088ad"; // your scada Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; 
@@ -121,12 +121,12 @@ int main(int argc, char *argv[]) {
 	}
 
 /*  Set Config */
-    TSCADA_CONFIG_STRUCT config;
+    TNODE_CONFIG_STRUCT config;
     ActionType action = Create;
 
-    config.Id = options.ScadaId; 
+    config.Id = options.NodeId; 
     config.Description = "description";
-    config.Name = "test_scada_01";
+    config.Name = "test_node_01";
     config.PrimaryIP = NULL;
     config.BackupIP= NULL;
     config.PrimaryPort = 1883;

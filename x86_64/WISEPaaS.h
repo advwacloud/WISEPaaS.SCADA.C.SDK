@@ -16,7 +16,7 @@ void Connect();
 
 void Disconnect();
 
-int UploadConfig(ActionType action, TSCADA_CONFIG_STRUCT edgeConfig);
+int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT edgeConfig);
     
 int SendData(TEDGE_DATA_STRUCT data);
 

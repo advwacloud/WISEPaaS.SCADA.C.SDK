@@ -2,8 +2,8 @@
 #define __CONFIG_H__
 
 typedef enum {
-	SCADA, Gateway, VirtualGroup
-} SCADAConfigType;
+	NODE, Gateway, VirtualGroup
+} NODEConfigType;
 
 typedef struct ANALOG_TAG_CONFIG {
     char * Name;
@@ -83,7 +83,7 @@ typedef struct DEVICE_CONFIG_STRUCT {
 
 } TDEVICE_CONFIG_STRUCT, * PTDEVICE_CONFIG_STRUCT;
 
-typedef struct SCADA_CONFIG_STRUCT {
+typedef struct NODE_CONFIG_STRUCT {
 
     int DeviceNumber;
 
@@ -94,10 +94,10 @@ typedef struct SCADA_CONFIG_STRUCT {
     char * BackupIP;
     int PrimaryPort;
     int BackupPort;
-    SCADAConfigType Type;
+    NODEConfigType Type;
     PTDEVICE_CONFIG_STRUCT DeviceList;
 
-} TSCADA_CONFIG_STRUCT, * PTSCADA_CONFIG_STRUCT;
+} TNODE_CONFIG_STRUCT, * PTNODE_CONFIG_STRUCT;
 #endif
 
 

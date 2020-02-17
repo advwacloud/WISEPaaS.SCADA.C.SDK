@@ -3,9 +3,9 @@
 
 const char *ConfigTopic = "/wisepaas/scada/%s/cfg";
 const char *DataTopic = "/wisepaas/scada/%s/data";
-const char *ScadaConnTopic = "/wisepaas/scada/%s/conn";
+const char *NodeConnTopic = "/wisepaas/scada/%s/conn";
 const char *DeviceConnTopic = "/wisepaas/scada/%s/%s/conn";
-const char *ScadaCmdTopic = "/wisepaas/scada/%s/cmd";
+const char *NodeCmdTopic = "/wisepaas/scada/%s/cmd";
 const char *DeviceCmdTopic = "/wisepaas/scada/%s/%s/cmd";
 const char *AckTopic = "/wisepaas/scada/%s/ack";
 const char *CfgAckTopic = "/wisepaas/scada/%s/cfgack";

@@ -19,8 +19,8 @@ int DeviceStatusMessage(TEDGE_DEVICE_STATUS_STRUCT data, char **payload);
 
 int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload);
 
-int ConvertCreateOrUpdateConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload, int hbt);
+int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **payload, int hbt);
 
-int ConvertDeleteConfig(int action, TSCADA_CONFIG_STRUCT config, char **payload);
+int ConvertDeleteConfig(int action, TNODE_CONFIG_STRUCT config, char **payload);
 
 #endif

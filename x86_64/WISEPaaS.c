@@ -20,7 +20,7 @@ bool IsConnected = false;
 
 char *_configTopic;
 char *_dataTopic;
-char *_scadaConnTopic;
+char *_nodeConnTopic;
 char *_deviceConnTopic;
 char *_cmdTopic;
 char *_ackTopic;
@@ -289,19 +289,19 @@ void Constructor(TOPTION_STRUCT query) {
 	bool clean_session = true;
 
 	/* create topic */
-	char *_scadaCmdTopic;
+	char *_nodeCmdTopic;
 	char *_deviceCmdTopic;
 
-	asprintf(&_scadaCmdTopic, ScadaCmdTopic, option.ScadaId);
-	asprintf(&_deviceCmdTopic, DeviceCmdTopic, option.ScadaId, option.DeviceId);
-	asprintf(&_configTopic, ConfigTopic, option.ScadaId);
-	asprintf(&_dataTopic, DataTopic, option.ScadaId);
-	asprintf(&_scadaConnTopic, ScadaConnTopic, option.ScadaId);
-	asprintf(&_deviceConnTopic, ScadaConnTopic, option.ScadaId);
-	asprintf(&_ackTopic, AckTopic, option.ScadaId);
-	asprintf(&_cfgAckTopic, CfgAckTopic, option.ScadaId);
+	asprintf(&_nodeCmdTopic, NodeCmdTopic, option.NodeId);
+	asprintf(&_deviceCmdTopic, DeviceCmdTopic, option.NodeId, option.DeviceId);
+	asprintf(&_configTopic, ConfigTopic, option.NodeId);
+	asprintf(&_dataTopic, DataTopic, option.NodeId);
+	asprintf(&_nodeConnTopic, NodeConnTopic, option.NodeId);
+	asprintf(&_deviceConnTopic, NodeConnTopic, option.NodeId);
+	asprintf(&_ackTopic, AckTopic, option.NodeId);
+	asprintf(&_cfgAckTopic, CfgAckTopic, option.NodeId);
 	if(option.Type == 0){
-		asprintf(&_cmdTopic,"%s",_scadaCmdTopic);
+		asprintf(&_cmdTopic,"%s",_nodeCmdTopic);
 	}
 	else{
 		asprintf(&_cmdTopic, "%s", _deviceCmdTopic);	
@@ -316,7 +316,7 @@ void Constructor(TOPTION_STRUCT query) {
 	}
 
 	size_t length = strlen(LastWillMessage());
-	mosquitto_will_set(mosq, _scadaConnTopic, length, LastWillMessage(), 1, true); //?
+	mosquitto_will_set(mosq, _nodeConnTopic, length, LastWillMessage(), 1, true); //?
 	if ( option.UseSecure ){
 		mosquitto_tls_insecure_set(mosq, true);
 	}
@@ -378,7 +378,7 @@ void Disconnect(){
 	int rc = mosquitto_publish(
 		mosq, // a valid mosquitto instance.
 		NULL,
-		(option.Type == eType ) ? _scadaConnTopic : _deviceConnTopic, // topic
+		(option.Type == eType ) ? _nodeConnTopic : _deviceConnTopic, // topic
 		strlen(payload), // payloadlen
 		payload, // payload
 		1,
@@ -392,7 +392,7 @@ void Disconnect(){
 	mosquitto_loop_stop(mosq, true);
 }
 
-int UploadConfig(ActionType action, TSCADA_CONFIG_STRUCT config){
+int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT config){
 	
 	char *payload = NULL;
 	bool result = false;
@@ -442,7 +442,7 @@ int SendDeviceStatus(TEDGE_DEVICE_STATUS_STRUCT data){
 		int rc = mosquitto_publish(
 			mosq, // a valid mosquitto instance.
 			NULL,
-			_scadaConnTopic, // topic
+			_nodeConnTopic, // topic
 			strlen(payload), // payloadlen
 			payload, // payload
 			1,
@@ -522,7 +522,7 @@ void* heartbeat_proc(void *secs)
 			int rc = mosquitto_publish(
 				mosq, // a valid mosquitto instance.
 				NULL,
-				(option.Type == eType ) ? _scadaConnTopic : _deviceConnTopic, // topic
+				(option.Type == eType ) ? _nodeConnTopic : _deviceConnTopic, // topic
 				strlen(payload), // payloadlen
 				payload, // payload
 				1,
