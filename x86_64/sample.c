@@ -8,7 +8,7 @@
 #include <dlfcn.h>
 #include <string.h>
 
-#include "WISEPaaS.h"
+#include "DatahubEdge.h"
 
 int nsleep(long miliseconds)
 {
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     char *error;
 
     void *handle;
-    handle = dlopen ("./WISEPaaS.so.1.0.0", RTLD_LAZY);
+    handle = dlopen ("./DatahubEdge.so.1.0.0", RTLD_LAZY);
 
     if (!handle) {
         fputs (dlerror(), stderr);

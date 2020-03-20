@@ -1,11 +1,13 @@
-build: WISEPaaS.so.1.0.0
+all: openssl lzo openvpn WISEPaaS.Datahub.Edge.so.1.0.0
+
+build: WISEPaaS.Datahub.Edge.so.1.0.0
 	gcc sample.c -ldl -g -o sample -std=c99
 
-WISEPaaS.so.1.0.0: WISEPaaS.o cJSON.o message.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
-	gcc -shared -Wl,-soname,WISEPaaS.so.1 -o WISEPaaS.so.1.0.0 WISEPaaS.o message.o cJSON.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
+WISEPaaS.Datahub.Edge.so.1.0.0: DatahubEdge.o cJSON.o message.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
+	gcc -shared -Wl,-soname,DatahubEdge.so.1 -o DatahubEdge.so.1.0.0 DatahubEdge.o message.o cJSON.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
 
-WISEPaaS.o: WISEPaaS.c
-	gcc -c -fPIC -o WISEPaaS.o WISEPaaS.c
+DatahubEdge.o: DatahubEdge.c
+	gcc -c -fPIC -o DatahubEdge.o DatahubEdge.c
 
 message.o : message.c cJSON.o
 	gcc -c -fPIC -o message.o message.c
@@ -14,4 +16,33 @@ cJSON.o: cJSON.c
 	gcc -c -fPIC -o cJSON.o cJSON.c
 
 clean:
-	rm -f sample *.o *.so.1.0.0
+	rm -f sample *.o *.so.1.0.0 
+	rm -rf $(CURDIR)/libovpn/build/*.*
+
+openssl:
+	tar -xvf $(CURDIR)/libovpn/openssl-1.0.2j.tar.gz
+	cd $(CURDIR)/openssl-1.0.2j && ./Configure gcc -static -no-shared --prefix=$(CURDIR)/libovpn/build  
+	cd $(CURDIR)/openssl-1.0.2j && $(MAKE) 
+	cd $(CURDIR)/openssl-1.0.2j && $(MAKE) install
+
+lzo:
+	tar -xvf $(CURDIR)/libovpn/lzo-2.09.tar.gz
+	cd $(CURDIR)/lzo-2.09 && ./configure --prefix=$(CURDIR)/libovpn/build --enable-static --disable-debug   
+	cd $(CURDIR)/lzo-2.09 && $(MAKE) 
+	cd $(CURDIR)/lzo-2.09 && $(MAKE) install
+
+openvpn:
+	tar -xvf $(CURDIR)/libovpn/openvpn-2.3.12.tar.gz
+	cd $(CURDIR)/openvpn-2.3.12 && \
+	./configure --prefix=$(CURDIR)/libovpn/build \
+	 	--disable-server --enable-static --disable-shared --disable-debug --disable-plugins \
+	 	OPENSSL_SSL_LIBS="-L$(CURDIR)/libovpn/build/lib -lssl" \
+	 	OPENSSL_SSL_CFLAGS="-I$(CURDIR)/libovpn/build/include" \
+	 	OPENSSL_CRYPTO_LIBS="-L$(CURDIR)/libovpn/build/lib -lcrypto" \
+	 	OPENSSL_CRYPTO_CFLAGS="-I$(CURDIR)/libovpn/build/include" \
+	 	LZO_CFLAGS="-I$(CURDIR)/libovpn/build/include" \
+	 	LZO_LIBS="-L$(CURDIR)/libovpn/build/lib -llzo2"&& \
+	cd $(CURDIR)/openvpn-2.3.12 && $(MAKE) LIBS="-all-static"
+	cd $(CURDIR)/openvpn-2.3.12 && $(MAKE) install
+	mv $(CURDIR)/build/sbin/openvpn $(CURDIR) 
+
