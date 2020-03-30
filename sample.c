@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
     char *error;
 
     void *handle;
-    handle = dlopen ("./DatahubEdge.so.1.0.0", RTLD_LAZY);
+    handle = dlopen ("./WISEPaaS.Datahub.Edge.so.1.0.2", RTLD_LAZY);
 
     if (!handle) {
         fputs (dlerror(), stderr);
