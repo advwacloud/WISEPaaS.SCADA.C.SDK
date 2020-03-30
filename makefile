@@ -6,7 +6,7 @@ build: WISEPaaS.Datahub.Edge.so.1.0.2
 	gcc sample.c -ldl -g -o sample -std=c99
 
 WISEPaaS.Datahub.Edge.so.1.0.2: DatahubEdge.o cJSON.o message.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
-	gcc -shared -Wl,-soname,DatahubEdge.so.1 -o DatahubEdge.so.1.0.0 DatahubEdge.o message.o cJSON.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
+	gcc -shared -Wl,-soname,DatahubEdge.so.1 -o DatahubEdge.so.1.0.2 DatahubEdge.o message.o cJSON.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
 
 DatahubEdge.o: DatahubEdge.c
 	gcc -c -fPIC -o DatahubEdge.o DatahubEdge.c
@@ -18,7 +18,7 @@ cJSON.o: cJSON.c
 	gcc -c -fPIC -o cJSON.o cJSON.c
 
 clean:
-	rm -f sample *.o *.so.1.0.0 
+	rm -f sample *.o *.so.1.0.2 
 	rm -rf $(CURDIR)/libovpn/build/*.*
 
 openssl-link:
