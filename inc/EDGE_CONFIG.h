@@ -72,6 +72,7 @@ typedef struct DEVICE_CONFIG_STRUCT {
     char * Id;
     char * Name;
     int ComPortNumber;
+    char * RetentionPolicyName;
     char * Type;
     char * Description;
     char * IP;

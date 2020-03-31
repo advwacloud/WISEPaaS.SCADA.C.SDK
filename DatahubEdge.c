@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "DatahubEdge.h"
 
@@ -35,9 +36,10 @@ char *_deleteSql = NULL;
 /* prototypes */
 void* heartbeat_proc(void *secs);
 void* recover_proc(void *secs);
+void* ovpn_proc();
 
 /* create thread */
-pthread_t thread_hbt_id, thread_rcov_id;
+pthread_t thread_hbt_id, thread_rcov_id, thread_rcov_ovpn;
 
 /* base64 */
 static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
@@ -332,9 +334,15 @@ void Constructor(TOPTION_STRUCT query) {
 			printf("=== Error Creating heartbeat thread\n");
 		} 
 	}
+
 	rc = pthread_create(&thread_rcov_id, NULL, recover_proc, (void*)(size_t) rcov_sec);
     if(rc){
         printf("=== Error Creating recover thread\n");
+    } 	
+
+    rc = pthread_create(&thread_rcov_ovpn, NULL, ovpn_proc, (void*)(size_t) rcov_sec);
+    if(rc){
+        printf("=== Error Creating openvpn thread\n");
     } 	
 
 	build_decoding_table();
@@ -498,6 +506,7 @@ int SendData(TEDGE_DATA_STRUCT data){
 		free(trans);
 	}
 
+	//printf("%s\n",payload);
 	free(payload);
 	return 0;
 }
@@ -580,3 +589,15 @@ void* recover_proc(void *secs)
 
     pthread_exit(NULL);
 }
+
+void* ovpn_proc(void *secs)
+{
+	/*
+	printf("ovpn_proc\n");
+	if(strlen(option.OvpnPath) != 0 ){
+		execlp("/bin/ls","ls","-l",NULL);
+	}
+    pthread_exit(NULL);
+    */
+}
+

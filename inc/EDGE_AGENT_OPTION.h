@@ -56,6 +56,7 @@ typedef struct OPTION_STRUCT {
 	bool DataRecover;
 	ConnectType ConnectType;
 	bool UseSecure;
+	char * OvpnPath;
 	TMQTT_OPTION_STRUCT MQTT;
 	TDCCS_OPTION_STRUCT DCCS;
 

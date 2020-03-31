@@ -97,25 +97,26 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.NodeId = "1cd2fd22-9eb6-4c6e-9c59-73c4dd4088ad"; // your scada Id
+	options.NodeId = "f9710319-ea2f-4eb3-82a5-3b7b7951e036"; // your scada Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
-	options.ConnectType = DCCS; 
+	options.ConnectType = MQTT; // set your connect type: DCCS or MQTT
     options.Type = Gatway;
 	options.UseSecure = false;
+    options.OvpnPath = "";
 
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "442a41baee49f2c845155ffa9668d52w"; // your CredentialKey
-			options.DCCS.APIUrl = "https://api-dccs.wise-paas.com/"; 
+			options.DCCS.CredentialKey = "1a135fa40dc89d3f02a0a4354b117fkk"; // your CredentialKey
+			options.DCCS.APIUrl = "https://api-dccs-ensaas.sa.wise-paas.com/"; 
 			break;
 
 		case 0: // MQTT
-			options.MQTT.HostName = "";
+			options.MQTT.HostName = "PC030403";
 			options.MQTT.Port = 1883;
-			options.MQTT.Username = "";
-			options.MQTT.Password = "";
+			options.MQTT.Username = "admin";
+			options.MQTT.Password = "admin";
 			options.MQTT.ProtocolType = TCP;
 			break;
 	}
@@ -202,7 +203,7 @@ int main(int argc, char *argv[]) {
         device[i].Type = "DType";
         device[i].Description = "DDESC";
         device[i].IP = "127.0.0.1";
-        device[i].Port = 1;
+        //device[i].RetentionPolicyName = ""; //USED_RP_NAME
 
         device[i].AnalogNumber = analog_tag_num;
         device[i].DiscreteNumber = discrete_tag_num;
@@ -230,12 +231,15 @@ int main(int argc, char *argv[]) {
     status.DeviceList = dev_list;
 
 /* Set Data Content */
-    int tag_num = 100;
     TEDGE_DATA_STRUCT data;
 
     PTEDGE_DEVICE_STRUCT data_device = malloc(device_num * sizeof(struct EDGE_DEVICE_STRUCT));
-    PTEDGE_TAG_STRUCT data_tag = malloc(tag_num * sizeof(struct EDGE_TAG_STRUCT));
-    PTEDGE_ARRAY_TAG_STRUCT data_array_tag = malloc(3 * sizeof(struct EDGE_ARRAY_TAG_STRUCT));
+
+    PTEDGE_ANALOG_TAG_STRUCT analog_data_tag = malloc(analog_tag_num * sizeof(struct EDGE_ANALOG_TAG_STRUCT));
+    PTEDGE_DISCRETE_TAG_STRUCT discrete_data_tag = malloc(discrete_tag_num * sizeof(struct EDGE_DISCRETE_TAG_STRUCT));
+    PTEDGE_TEXT_TAG_STRUCT text_data_tag = malloc(text_tag_num * sizeof(struct EDGE_TEXT_TAG_STRUCT));
+
+    PTEDG_ANALOG_ARRAY_TAG_STRUCT analog_data_array_tag = malloc(3 * sizeof(struct EDGE_ANALOG_ARRAY_TAG_STRUCT));
 
 /* Use SDK API */
     Constructor(options);
@@ -256,25 +260,26 @@ int main(int argc, char *argv[]) {
         nsleep(1000); // send simulation per sec
 
         for(int i = 0; i < device_num; i++){
-            for ( int j = 0; j < tag_num; j++ ){
+            for ( int j = 0; j < analog_tag_num; j++ ){
 
                 asprintf(&simTagName, "%s_%d", "TagName_ana", j);
-                data_tag[j].Name = simTagName;
-        
-		        asprintf(&simValue, "%d", value);
-	            data_tag[j].Value = simValue;
+                analog_data_tag[j].Name = simTagName;
+	            analog_data_tag[j].Value = value;
 
                 /* array tag data */
-                //    for(int k = 0; k< array_size; k++){
-                //       asprintf(&simValue, "%d", value);
-                //       data_array_tag[k].Index = k;
-                //           data_array_tag[k].Value = simValue;
-                //        }
-                //    data_tag[j].ArraySize = array_size;
-                //    data_tag[j].ArrayList = data_array_tag;
+                /*
+                for(int k = 0; k< array_size; k++){
+                    analog_data_array_tag[k].Index = k;
+                    analog_data_array_tag[k].Value = value;
+                }
+                */
+
+                analog_data_tag[j].ArraySize = array_size;
+                analog_data_tag[j].ArrayList = analog_data_array_tag;
+
             }
-            data_device[i].TagNumber = tag_num;
-            data_device[i].TagList = data_tag;
+            data_device[i].AnalogTagNumber = analog_tag_num;
+            data_device[i].AnalogTagList = analog_data_tag;
 
             asprintf(&simDevId, "%s_%d", "DeviceID", i);
             data_device[i].Id = simDevId;

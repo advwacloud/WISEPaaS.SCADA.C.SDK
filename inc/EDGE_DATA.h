@@ -2,22 +2,50 @@
 #define __EDGE_DATA_H__
 
 //#include<time.h>
-typedef struct EDGE_ARRAY_TAG_STRUCT {
+typedef struct EDGE_ANALOG_ARRAY_TAG_STRUCT {
+	int Index;
+	int Value;
+} TEDGE_ANALOG_ARRAY_TAG_STRUCT, *PTEDG_ANALOG_ARRAY_TAG_STRUCT;
+
+typedef struct EDGE_DISCRETE_ARRAY_TAG_STRUCT {
+	int Index;
+	unsigned int Value;
+} TEDGE_DISCRETE_ARRAY_TAG_STRUCT, *PTEDGE_DISCRETE_ARRAY_TAG_STRUCT;
+
+typedef struct EDGE_TEXT_ARRAY_TAG_STRUCT {
 	int Index;
 	char * Value;
-} TEDGE_ARRAY_TAG_STRUCT, *PTEDGE_ARRAY_TAG_STRUCT;
+} TEDGE_TEXT_ARRAY_TAG_STRUCT, *PTEDGE_TEXT_ARRAY_TAG_STRUCT;
 
-typedef struct EDGE_TAG_STRUCT {
+typedef struct EDGE_ANALOG_TAG_STRUCT {
+	char * Name;
+	int Value;
+	int ArraySize;
+	PTEDG_ANALOG_ARRAY_TAG_STRUCT ArrayList;
+} TEDGE_ANALOG_TAG_STRUCT, *PTEDGE_ANALOG_TAG_STRUCT;
+
+typedef struct EDGE_DISCRETE_TAG_STRUCT {
+	char * Name;
+	unsigned int Value;
+	int ArraySize;
+	PTEDGE_DISCRETE_ARRAY_TAG_STRUCT ArrayList;
+} TEDGE_DISCRETE_TAG_STRUCT, *PTEDGE_DISCRETE_TAG_STRUCT;
+
+typedef struct EDGE_TEXT_TAG_STRUCT {
 	char * Name;
 	char * Value;
 	int ArraySize;
-	PTEDGE_ARRAY_TAG_STRUCT ArrayList;
-} TEDGE_TAG_STRUCT, *PTEDGE_TAG_STRUCT;
+	PTEDGE_TEXT_ARRAY_TAG_STRUCT ArrayList;
+} TEDGE_TEXT_TAG_STRUCT, *PTEDGE_TEXT_TAG_STRUCT;
 
 typedef struct EDGE_DEVICE_STRUCT {
-	int TagNumber;
+	int AnalogTagNumber;
+	int DiscreteTagNumber;
+	int TextTagNumber;
 	char * Id;
-	PTEDGE_TAG_STRUCT TagList;
+	PTEDGE_ANALOG_TAG_STRUCT AnalogTagList;
+	PTEDGE_DISCRETE_TAG_STRUCT DiscreteTagList;
+	PTEDGE_TEXT_TAG_STRUCT TextTagList;
 } TEDGE_DEVICE_STRUCT, *PTEDGE_DEVICE_STRUCT;
 
 typedef struct EDGE_DATA_STRUCT {
