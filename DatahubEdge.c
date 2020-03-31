@@ -592,12 +592,16 @@ void* recover_proc(void *secs)
 
 void* ovpn_proc(void *secs)
 {
-	/*
-	printf("ovpn_proc\n");
+	printf("Start to connect OpenVPN\n");
 	if(strlen(option.OvpnPath) != 0 ){
-		execlp("/bin/ls","ls","-l",NULL);
+
+		char *cmdbuf;
+
+		asprintf(&cmdbuf, "./openvpn %s", option.OvpnPath);
+		system(cmdbuf);
+
+		free(cmdbuf);
 	}
     pthread_exit(NULL);
-    */
 }
 
