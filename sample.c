@@ -128,10 +128,6 @@ int main(int argc, char *argv[]) {
     config.Id = options.NodeId; 
     config.Description = "description";
     config.Name = "test_node_01";
-    config.PrimaryIP = NULL;
-    config.BackupIP= NULL;
-    config.PrimaryPort = 1883;
-    config.BackupPort = 1883;
     config.Type = 1;
 
     int device_num = 1, analog_tag_num = 10, discrete_tag_num = 10, text_tag_num = 10;
@@ -202,7 +198,6 @@ int main(int argc, char *argv[]) {
         device[i].Name = simDevName;
         device[i].Type = "DType";
         device[i].Description = "DDESC";
-        device[i].IP = "127.0.0.1";
         //device[i].RetentionPolicyName = ""; //USED_RP_NAME
 
         device[i].AnalogNumber = analog_tag_num;
@@ -250,13 +245,13 @@ int main(int argc, char *argv[]) {
     UploadConfig(action, config);
     SendDeviceStatus(status);
  
-    int value = 0; 
+    double value = 0; 
 
     while(1){
 
         if( value >= 1000 ){ value =0; } // simulation values 0 ~ 1000
         value ++;
-        
+
         nsleep(1000); // send simulation per sec
 
         for(int i = 0; i < device_num; i++){
@@ -272,10 +267,9 @@ int main(int argc, char *argv[]) {
                     analog_data_array_tag[k].Index = k;
                     analog_data_array_tag[k].Value = value;
                 }
-                */
-
                 analog_data_tag[j].ArraySize = array_size;
                 analog_data_tag[j].ArrayList = analog_data_array_tag;
+                */
 
             }
             data_device[i].AnalogTagNumber = analog_tag_num;

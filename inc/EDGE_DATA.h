@@ -4,7 +4,7 @@
 //#include<time.h>
 typedef struct EDGE_ANALOG_ARRAY_TAG_STRUCT {
 	int Index;
-	int Value;
+	double Value;
 } TEDGE_ANALOG_ARRAY_TAG_STRUCT, *PTEDG_ANALOG_ARRAY_TAG_STRUCT;
 
 typedef struct EDGE_DISCRETE_ARRAY_TAG_STRUCT {
@@ -19,7 +19,7 @@ typedef struct EDGE_TEXT_ARRAY_TAG_STRUCT {
 
 typedef struct EDGE_ANALOG_TAG_STRUCT {
 	char * Name;
-	int Value;
+	double Value;
 	int ArraySize;
 	PTEDG_ANALOG_ARRAY_TAG_STRUCT ArrayList;
 } TEDGE_ANALOG_TAG_STRUCT, *PTEDGE_ANALOG_TAG_STRUCT;

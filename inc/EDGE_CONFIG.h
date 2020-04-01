@@ -75,8 +75,6 @@ typedef struct DEVICE_CONFIG_STRUCT {
     char * RetentionPolicyName;
     char * Type;
     char * Description;
-    char * IP;
-    int Port;
 
     PTANALOG_TAG_CONFIG AnalogTagList;
     PTDISCRETE_TAG_CONFIG DiscreteTagList;
@@ -91,10 +89,6 @@ typedef struct NODE_CONFIG_STRUCT {
 	char * Id;
 	char * Name;
     char * Description;
-    char * PrimaryIP;
-    char * BackupIP;
-    int PrimaryPort;
-    int BackupPort;
     NODEConfigType Type;
     PTDEVICE_CONFIG_STRUCT DeviceList;
 

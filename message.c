@@ -268,6 +268,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
             for(int itag = 0; itag< data.DeviceList[idev].AnalogTagNumber; itag++){
 
                 if(data.DeviceList[idev].AnalogTagList[itag].Name && data.DeviceList[idev].AnalogTagList[itag].Value){
+                    //printf("%f\n",data.DeviceList[idev].AnalogTagList[itag].Value);
                     cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, data.DeviceList[idev].AnalogTagList[itag].Value);
                 }
 
@@ -584,9 +585,7 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
 
             cJSON_AddStringToObject(subJson_node_dev_name, "Name", config.DeviceList[idev].Name);
             cJSON_AddStringToObject(subJson_node_dev_name, "Type", config.DeviceList[idev].Type);
-            cJSON_AddStringToObject(subJson_node_dev_name, "Desc", config.DeviceList[idev].Description);
-            cJSON_AddStringToObject(subJson_node_dev_name, "IP", config.DeviceList[idev].IP);
-            cJSON_AddNumberToObject(subJson_node_dev_name, "Port", config.DeviceList[idev].Port); 
+            cJSON_AddStringToObject(subJson_node_dev_name, "Desc", config.DeviceList[idev].Description); 
             cJSON_AddNumberToObject(subJson_node_dev_name, "PNbr", config.DeviceList[idev].ComPortNumber);
             cJSON_AddStringToObject(subJson_node_dev_name, "RP", config.DeviceList[idev].RetentionPolicyName);
 
@@ -605,15 +604,7 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
     if(config.Description){
         cJSON_AddStringToObject(subJson_node_id, "Desc", config.Description);
     }
-    if(config.PrimaryIP){
-        cJSON_AddStringToObject(subJson_node_id, "PIP", config.PrimaryIP);
-    }
-    if(config.BackupIP){
-        cJSON_AddStringToObject(subJson_node_id, "BIP", config.BackupIP);
-    }
 
-    cJSON_AddNumberToObject(subJson_node_id, "PPort", config.PrimaryPort); 
-    cJSON_AddNumberToObject(subJson_node_id, "BPort", config.BackupPort); 
     cJSON_AddNumberToObject(subJson_node_id, "Type", config.Type);
     cJSON_AddNumberToObject(subJson_node_id, "Hbt", hbt);
 

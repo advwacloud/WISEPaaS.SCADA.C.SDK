@@ -499,10 +499,6 @@ int SendData(TEDGE_DATA_STRUCT data){
 
 		asprintf(&_insertSql, InsertSql, trans);
 		sqlite3_exec(db, _insertSql, 0, 0, NULL);
-		//sqlite3_exec(db, "INSERT INTO Data (message) VALUES(\"d\"\"DeviceID_0\"\"TagName_ana_0\"\"1\",\"ts\"\"2018-10-14T22:28:15Z\")", 0, 0, NULL);
-		//INSERT INTO Data (message) VALUES
-		//printf("%s\n",_insertSql);
-		//printf("recover: %d\n", sqlite3_last_insert_rowid(db));
 		free(trans);
 	}
 
