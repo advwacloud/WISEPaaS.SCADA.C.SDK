@@ -267,13 +267,10 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
             // analog tag
             for(int itag = 0; itag< data.DeviceList[idev].AnalogTagNumber; itag++){
 
-                if(data.DeviceList[idev].AnalogTagList[itag].Name){
-                    //printf("%f\n",data.DeviceList[idev].AnalogTagList[itag].Value);
-                    cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, data.DeviceList[idev].AnalogTagList[itag].Value);
-                }
-
-                
-		        if(data.DeviceList[idev].AnalogTagList[itag].Name && data.DeviceList[idev].AnalogTagList[itag].ArrayList){
+               
+		        if(data.DeviceList[idev].AnalogTagList[itag].Name 
+					&& data.DeviceList[idev].AnalogTagList[itag].ArrayList
+					&& data.DeviceList[idev].AnalogTagList[itag].ArraySize){
 
                     subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].AnalogTagList[itag].ArraySize; iarray ++){
@@ -284,7 +281,10 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
                         cJSON_AddNumberToObject(subJson_node_array, idx, data.DeviceList[idev].AnalogTagList[itag].ArrayList[iarray].Value);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, subJson_node_array);
-                }   
+                } 
+				else if(data.DeviceList[idev].AnalogTagList[itag].Name){
+                    cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, data.DeviceList[idev].AnalogTagList[itag].Value);
+                }
                    
             }
 
@@ -292,11 +292,9 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
             // discrete tag            
             for(int itag = 0; itag< data.DeviceList[idev].DiscreteTagNumber; itag++){
 
-                if(data.DeviceList[idev].DiscreteTagList[itag].Name){
-                    cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, data.DeviceList[idev].DiscreteTagList[itag].Value);
-                }
-
-                if(data.DeviceList[idev].DiscreteTagList[itag].Name && data.DeviceList[idev].DiscreteTagList[itag].ArrayList){
+                if(data.DeviceList[idev].DiscreteTagList[itag].Name 
+					&& data.DeviceList[idev].DiscreteTagList[itag].ArrayList
+					&& data.DeviceList[idev].DiscreteTagList[itag].ArraySize){
 
                     subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].DiscreteTagList[itag].ArraySize; iarray ++){
@@ -307,17 +305,17 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
                         cJSON_AddNumberToObject(subJson_node_array, idx, data.DeviceList[idev].DiscreteTagList[itag].ArrayList[iarray].Value);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, subJson_node_array);
-                }        
+                }   
+				else if(data.DeviceList[idev].DiscreteTagList[itag].Name){
+                    cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, data.DeviceList[idev].DiscreteTagList[itag].Value);
+                }				
             }
 
             // text tag
             for(int itag = 0; itag< data.DeviceList[idev].TextTagNumber; itag++){
-
-                if(data.DeviceList[idev].TextTagList[itag].Name && data.DeviceList[idev].TextTagList[itag].Value){
-                    cJSON_AddStringToObject(subJson_node_dev, data.DeviceList[idev].TextTagList[itag].Name, data.DeviceList[idev].TextTagList[itag].Value);
-                }
-
-                if(data.DeviceList[idev].TextTagList[itag].Name && data.DeviceList[idev].TextTagList[itag].ArrayList){
+                if(data.DeviceList[idev].TextTagList[itag].Name 
+					&& data.DeviceList[idev].TextTagList[itag].ArrayList
+					&& data.DeviceList[idev].TextTagList[itag].ArraySize){
 
                     subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].TextTagList[itag].ArraySize; iarray ++){
@@ -328,7 +326,10 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
                         cJSON_AddStringToObject(subJson_node_array, idx, data.DeviceList[idev].TextTagList[itag].ArrayList[iarray].Value);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].TextTagList[itag].Name, subJson_node_array);
-                }        
+                }    
+				else if(data.DeviceList[idev].TextTagList[itag].Name && data.DeviceList[idev].TextTagList[itag].Value){
+                    cJSON_AddStringToObject(subJson_node_dev, data.DeviceList[idev].TextTagList[itag].Name, data.DeviceList[idev].TextTagList[itag].Value);
+                }				
             }
             
 
