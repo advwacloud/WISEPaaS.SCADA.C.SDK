@@ -588,7 +588,7 @@ void* recover_proc(void *secs)
 
 void* ovpn_proc(void *secs)
 {
-	printf("Start to connect OpenVPN\n");
+	// printf("Check OpenVPN\n");
 	if(strlen(option.OvpnPath) != 0 ){
 
 		char *cmdbuf;
