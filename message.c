@@ -267,7 +267,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
             // analog tag
             for(int itag = 0; itag< data.DeviceList[idev].AnalogTagNumber; itag++){
 
-                if(data.DeviceList[idev].AnalogTagList[itag].Name && data.DeviceList[idev].AnalogTagList[itag].Value){
+                if(data.DeviceList[idev].AnalogTagList[itag].Name){
                     //printf("%f\n",data.DeviceList[idev].AnalogTagList[itag].Value);
                     cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, data.DeviceList[idev].AnalogTagList[itag].Value);
                 }
@@ -292,7 +292,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
             // discrete tag            
             for(int itag = 0; itag< data.DeviceList[idev].DiscreteTagNumber; itag++){
 
-                if(data.DeviceList[idev].DiscreteTagList[itag].Name && data.DeviceList[idev].DiscreteTagList[itag].Value){
+                if(data.DeviceList[idev].DiscreteTagList[itag].Name){
                     cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, data.DeviceList[idev].DiscreteTagList[itag].Value);
                 }
 
