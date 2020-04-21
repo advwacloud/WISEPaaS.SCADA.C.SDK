@@ -50,6 +50,7 @@ typedef struct EDGE_DEVICE_STRUCT {
 
 typedef struct EDGE_DATA_STRUCT {
 	int DeviceNumber;
+  char * Time;
 	//time_t Timestamp;
 	PTEDGE_DEVICE_STRUCT DeviceList;
 } TEDGE_DATA_STRUCT, *PTEDGE_DATA_STRUCT;

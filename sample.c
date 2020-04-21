@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <dlfcn.h>
 #include <string.h>
+#include <time.h>
 
 #include "DatahubEdge.h"
 
@@ -97,23 +98,23 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.NodeId = "f9710319-ea2f-4eb3-82a5-3b7b7951e036"; // your scada Id
+	options.NodeId = "92fd87bf-be44-404f-9971-be0c7eb726e4"; // your scada Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
-	options.ConnectType = MQTT; // set your connect type: DCCS or MQTT
-    options.Type = Gatway;
+	options.ConnectType = DCCS; // set your connect type: DCCS or MQTT
+  options.Type = Gatway;
 	options.UseSecure = false;
-    options.OvpnPath = "";
+  options.OvpnPath = "";
 
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "1a135fa40dc89d3f02a0a4354b117fkk"; // your CredentialKey
+			options.DCCS.CredentialKey = "3d0d77aacfd78e7ef16dc02cda7b3a95"; // your CredentialKey
 			options.DCCS.APIUrl = "https://api-dccs-ensaas.sa.wise-paas.com/"; 
 			break;
 
 		case 0: // MQTT
-			options.MQTT.HostName = "PC030403";
+			options.MQTT.HostName = "172.16.8.6";
 			options.MQTT.Port = 1883;
 			options.MQTT.Username = "admin";
 			options.MQTT.Password = "admin";
@@ -238,7 +239,7 @@ int main(int argc, char *argv[]) {
 
 /* Use SDK API */
     Constructor(options);
-	Connect();
+	  Connect();
 
     nsleep(2000);
     
@@ -259,7 +260,7 @@ int main(int argc, char *argv[]) {
 
                 asprintf(&simTagName, "%s_%d", "TagName_ana", j);
                 analog_data_tag[j].Name = simTagName;
-	            analog_data_tag[j].Value = value;
+	              analog_data_tag[j].Value = value;         
 
                 /* array tag data */
                 /*
@@ -281,6 +282,7 @@ int main(int argc, char *argv[]) {
         data.DeviceNumber = device_num;
         data.DeviceList = data_device;
 
+        //data.Time = "2020-04-21T09:47:03.633Z";  //%Y-%m-%dT%H:%M:%S.MSZ
         SendData(data);
     }
     

@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 #include "inc/cJSON.h"
 #include "inc/message.h"
 
@@ -17,10 +18,19 @@ char * _getTime(){
     time_t rawtime = time(NULL);
         
     struct tm *ptm = localtime(&rawtime);
-            
-    memset(ts, 0, TS_BUF_LEN);
-    strftime(ts, TS_BUF_LEN, "%Y-%m-%dT%H:%M:%SZ", ptm);
+    struct timeval tv;
 
+    char buffer [80];
+            
+    strftime(buffer, 80, "%Y-%m-%dT%H:%M:%S", ptm);
+    //sprintf(ts, "%s.%03dZ", buffer, milli);
+    
+    gettimeofday(&tv, NULL);
+    int milli = tv.tv_usec;
+    
+    //sprintf(ts, "%sZ", buffer);
+    sprintf(ts, "%s.%03dZ", buffer, milli);
+    
     return ts; 
 }
 
@@ -338,7 +348,11 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
     }
 
     cJSON_AddItemToObject(pJsonRoot, "d", subJson_d);
-    cJSON_AddStringToObject(pJsonRoot, "ts", ts);
+    if(data.Time){
+      cJSON_AddStringToObject(pJsonRoot, "ts", data.Time);
+    }else{
+      cJSON_AddStringToObject(pJsonRoot, "ts", ts);
+    }
 
     //cJSON_Print cJSON_PrintUnformatted
     *payload = cJSON_PrintUnformatted(pJsonRoot);
