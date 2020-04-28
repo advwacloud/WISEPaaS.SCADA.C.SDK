@@ -14,19 +14,19 @@
 /* create a sleep function used for demo */
 int nsleep(long miliseconds)
 {
-   struct timespec req, rem;
+    struct timespec req, rem;
 
-   if(miliseconds > 999)
-   {   
+    if(miliseconds > 999)
+    {   
         req.tv_sec = (int)(miliseconds / 1000);                            /* Must be Non-Negative */
         req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
-   }   
-   else
-   {   
+    }   
+    else
+    {   
         req.tv_sec = 0;                         /* Must be Non-Negative */
         req.tv_nsec = miliseconds * 1000000;    /* Must be in range of 0 to 999999999 */
-   }   
-   return nanosleep(&req , &rem);
+    }   
+    return nanosleep(&req , &rem);
 }
 
 
@@ -105,9 +105,9 @@ int main(int argc, char *argv[]) {
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; // set your connect type: DCCS or MQTT
-  options.Type = Gatway;
+    options.Type = Gatway;
 	options.UseSecure = false;
-  options.OvpnPath = "";
+    options.OvpnPath = "";
 
     switch (options.ConnectType)
 	{
@@ -238,13 +238,13 @@ int main(int argc, char *argv[]) {
 
 /* Use SDK API */
     Constructor(options);
-	  Connect();
+    Connect();
 
     nsleep(2000);
     
     UploadConfig(action, config);
     SendDeviceStatus(status);
- 
+
     double value = 0; 
 
     while(1){
@@ -259,8 +259,7 @@ int main(int argc, char *argv[]) {
 
                 asprintf(&simTagName, "%s_%d", "TagName_ana", j);
                 analog_data_tag[j].Name = simTagName;
-	              analog_data_tag[j].Value = value;         
-
+	            analog_data_tag[j].Value = value;
                 /* array tag data */
                 /*
                 for(int k = 0; k< array_size; k++){

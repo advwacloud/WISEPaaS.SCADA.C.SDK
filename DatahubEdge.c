@@ -92,8 +92,8 @@ char *base64_encode(const unsigned char *data,
 
 
 unsigned char *base64_decode(const char *data,
-                             size_t input_length,
-                             size_t *output_length) {
+                            size_t input_length,
+                            size_t *output_length) {
 
     if (decoding_table == NULL) {
 		build_decoding_table();
@@ -136,19 +136,19 @@ void base64_cleanup() {
 
 int nsleep(long miliseconds)
 {
-   struct timespec req, rem;
+   	struct timespec req, rem;
 
-   if(miliseconds > 999)
-   {   
+   	if(miliseconds > 999)
+   	{   
         req.tv_sec = (int)(miliseconds / 1000);                            /* Must be Non-Negative */
         req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
-   }   
-   else
-   {   
+   	}   
+   	else
+   	{   
         req.tv_sec = 0;                         /* Must be Non-Negative */
         req.tv_nsec = miliseconds * 1000000;    /* Must be in range of 0 to 999999999 */
-   }   
-   return nanosleep(&req , &rem);
+   	}   
+   	return nanosleep(&req , &rem);
 }
 
 /* sqllite */
@@ -179,32 +179,32 @@ void initdb(){
 }
 
 struct string {
-  char *ptr;
-  size_t len;
+  	char *ptr;
+  	size_t len;
 };
 
 void curlInitString(struct string *s) {
-  s->len = 0;
-  s->ptr = malloc(s->len+1);
-  if (s->ptr == NULL) {
-    fprintf(stderr, "malloc() failed\n");
-    exit(0);
-  }
-  s->ptr[0] = '\0';
+	s->len = 0;
+	s->ptr = malloc(s->len+1);
+	if (s->ptr == NULL) {
+		fprintf(stderr, "malloc() failed\n");
+		exit(0);
+	}
+	s->ptr[0] = '\0';
 }
 
 size_t curlWriteFunc(void *ptr, size_t size, size_t nmemb, struct string *s){
-  size_t new_len = s->len + size*nmemb;
-  s->ptr = realloc(s->ptr, new_len+1);
-  if (s->ptr == NULL) {
-    fprintf(stderr, "realloc() failed\n");
-    exit(0);
-  }
-  memcpy(s->ptr+s->len, ptr, size*nmemb);
-  s->ptr[new_len] = '\0';
-  s->len = new_len;
+	size_t new_len = s->len + size*nmemb;
+	s->ptr = realloc(s->ptr, new_len+1);
+	if (s->ptr == NULL) {
+		fprintf(stderr, "realloc() failed\n");
+		exit(0);
+	}
+	memcpy(s->ptr+s->len, ptr, size*nmemb);
+	s->ptr[new_len] = '\0';
+	s->len = new_len;
 
-  return size*nmemb;
+	return size*nmemb;
 }
 
 void getCredentialFromDCCS(){
@@ -328,8 +328,7 @@ void Constructor(TOPTION_STRUCT query) {
 	mosquitto_will_set(mosq, _nodeConnTopic, length, LastWillMessage(), 1, true); //?
 	if ( option.UseSecure ){
 		mosquitto_tls_insecure_set(mosq, true);
-	}
-                    	
+	}                 	
 	mosquitto_connect_callback_set(mosq, connect_callback);
 	mosquitto_disconnect_callback_set(mosq, disconnect_callback);
 	mosquitto_message_callback_set(mosq, message_callback);

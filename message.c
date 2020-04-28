@@ -256,8 +256,6 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
 
             // analog tag
             for(int itag = 0; itag< data.DeviceList[idev].AnalogTagNumber; itag++){
-
-               
 		        if(data.DeviceList[idev].AnalogTagList[itag].Name 
 					&& data.DeviceList[idev].AnalogTagList[itag].ArrayList
 					&& data.DeviceList[idev].AnalogTagList[itag].ArraySize){
@@ -275,23 +273,17 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
 				else if(data.DeviceList[idev].AnalogTagList[itag].Name){
                     cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].AnalogTagList[itag].Name, data.DeviceList[idev].AnalogTagList[itag].Value);
                 }
-                   
             }
-
-
             // discrete tag            
             for(int itag = 0; itag< data.DeviceList[idev].DiscreteTagNumber; itag++){
-
                 if(data.DeviceList[idev].DiscreteTagList[itag].Name 
 					&& data.DeviceList[idev].DiscreteTagList[itag].ArrayList
 					&& data.DeviceList[idev].DiscreteTagList[itag].ArraySize){
 
                     subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].DiscreteTagList[itag].ArraySize; iarray ++){
-
                         char *idx = NULL;
                         asprintf(&idx, "%d", data.DeviceList[idev].DiscreteTagList[itag].ArrayList[iarray].Index);
-
                         cJSON_AddNumberToObject(subJson_node_array, idx, data.DeviceList[idev].DiscreteTagList[itag].ArrayList[iarray].Value);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, subJson_node_array);
@@ -300,7 +292,6 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
                     cJSON_AddNumberToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, data.DeviceList[idev].DiscreteTagList[itag].Value);
                 }				
             }
-
             // text tag
             for(int itag = 0; itag< data.DeviceList[idev].TextTagNumber; itag++){
                 if(data.DeviceList[idev].TextTagList[itag].Name 
@@ -309,10 +300,8 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
 
                     subJson_node_array= cJSON_CreateObject();
                     for(int iarray = 0; iarray < data.DeviceList[idev].TextTagList[itag].ArraySize; iarray ++){
-
                         char *idx = NULL;
                         asprintf(&idx, "%d", data.DeviceList[idev].TextTagList[itag].ArrayList[iarray].Index);
-
                         cJSON_AddStringToObject(subJson_node_array, idx, data.DeviceList[idev].TextTagList[itag].ArrayList[iarray].Value);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].TextTagList[itag].Name, subJson_node_array);
@@ -322,16 +311,15 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload){
                 }				
             }
             
-
             cJSON_AddItemToObject(subJson_d, data.DeviceList[idev].Id, subJson_node_dev);
         }
     }
 
     cJSON_AddItemToObject(pJsonRoot, "d", subJson_d);
     if(data.Time){
-      cJSON_AddStringToObject(pJsonRoot, "ts", data.Time);
+        cJSON_AddStringToObject(pJsonRoot, "ts", data.Time);
     }else{
-      cJSON_AddStringToObject(pJsonRoot, "ts", ts);
+        cJSON_AddStringToObject(pJsonRoot, "ts", ts);
     }
 
     //cJSON_Print cJSON_PrintUnformatted
@@ -509,7 +497,6 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
                 if(config.DeviceList[idev].DiscreteTagList[idis].State7){
                     cJSON_AddStringToObject(subJson_tag_dis, "S7", config.DeviceList[idev].DiscreteTagList[idis].State7);
                 }
-     
                 if(config.DeviceList[idev].DiscreteTagList[idis].State0AlarmPriority){
                     cJSON_AddNumberToObject(subJson_tag_dis, "S0P", config.DeviceList[idev].DiscreteTagList[idis].State0AlarmPriority);
                 }
