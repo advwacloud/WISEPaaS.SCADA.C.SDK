@@ -23,12 +23,10 @@ char * _getTime(){
     char buffer [80];
             
     strftime(buffer, 80, "%Y-%m-%dT%H:%M:%S", ptm);
-    //sprintf(ts, "%s.%03dZ", buffer, milli);
     
     gettimeofday(&tv, NULL);
-    int milli = tv.tv_usec;
+    int milli = tv.tv_usec/1000; // micro sec
     
-    //sprintf(ts, "%sZ", buffer);
     sprintf(ts, "%s.%03dZ", buffer, milli);
     
     return ts; 
@@ -36,7 +34,6 @@ char * _getTime(){
 
 void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char **pPwd, int *pPort)
 {
-    //printf("%s\n",pMsg);
     cJSON * root = NULL;
     cJSON * cred = NULL;
     cJSON * protocols = NULL;
@@ -57,21 +54,20 @@ void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char 
     }
     else
     {
-        msg = cJSON_GetObjectItem(root, "message");//
+        msg = cJSON_GetObjectItem(root, "message");
 
         if(cJSON_Print(msg) != NULL){
             printf("get dccs error: %s\n", cJSON_Print(msg));
         }
         else{
 
-            cred = cJSON_GetObjectItem(root, "credential");//
-            //printf("%s\n", cJSON_Print(root));
+            cred = cJSON_GetObjectItem(root, "credential");
 
-            host = cJSON_GetObjectItem(root, "serviceHost");// 
+            host = cJSON_GetObjectItem(root, "serviceHost"); 
 
             asprintf(pHost,"%s",host->valuestring);
 
-            protocols = cJSON_GetObjectItem(cred, "protocols");//   
+            protocols = cJSON_GetObjectItem(cred, "protocols");   
 
             if(secure){
             mqttssl = cJSON_GetObjectItem(protocols, "mqtt+ssl"); 
@@ -95,7 +91,6 @@ void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char 
 
 void ParseEventJson(char *pMsg, char **pCmd, char **pVal)
 {
-    //printf("%s\n",pMsg);
     cJSON *root = cJSON_Parse(pMsg);     
     if (!root) 
     {
@@ -105,12 +100,9 @@ void ParseEventJson(char *pMsg, char **pCmd, char **pVal)
     {
         cJSON *d = cJSON_GetObjectItem(root, "d");
 
-        //printf("%s\n", cJSON_PrintUnformatted(d));
-
         cJSON *cmd = cJSON_GetObjectItem(d, "Cmd");
 
         if(cmd != NULL){
-            //printf("%s\n",cmd->valuestring);
             asprintf(pCmd,"%s",cmd->valuestring);
         }
         cJSON *val = cJSON_GetObjectItem(d, "Val");
@@ -142,7 +134,6 @@ char * LastWillMessage()
     cJSON_AddItemToObject(pJsonRoot, "d", pSubJson);
     cJSON_AddStringToObject(pJsonRoot, "ts", ts);
 
-    //char * p = cJSON_Print(pJsonRoot);
     char * p = cJSON_PrintUnformatted(pJsonRoot);
     if(NULL == p)
     {
@@ -151,7 +142,6 @@ char * LastWillMessage()
         cJSON_Delete(pJsonRoot);
         return NULL;
     }
-    //free(p);
     cJSON_Delete(pJsonRoot);
 
     return p;
@@ -166,8 +156,6 @@ char * DisconnectMessage()
     if(NULL == pJsonRoot){
         return NULL;
     }
-    //cJSON_AddNumberToObject(pJsonRoot, "number", 10010);
-    //cJSON_AddBoolToObject(pJsonRoot, "bool", 1);
 
     cJSON * pSubJson = NULL;
     pSubJson = cJSON_CreateObject();
@@ -181,17 +169,12 @@ char * DisconnectMessage()
     cJSON_AddItemToObject(pJsonRoot, "d", pSubJson);
     cJSON_AddStringToObject(pJsonRoot, "ts", ts);
 
-    //char * p = cJSON_Print(pJsonRoot);
-  // else use : 
     char * p = cJSON_PrintUnformatted(pJsonRoot);
     if(NULL == p)
     {
-        //convert json list to string faild, exit
-        //because sub json pSubJson han been add to pJsonRoot, so just delete pJsonRoot, if you also delete pSubJson, it will coredump, and error is : double free
         cJSON_Delete(pJsonRoot);
         return NULL;
     }
-    //free(p);
     cJSON_Delete(pJsonRoot);
 
     return p;
@@ -210,13 +193,11 @@ void HearbeatMessage(char **payload){
     pSubJson = cJSON_CreateObject();
     if(NULL == pSubJson){
         cJSON_Delete(pJsonRoot);
-        //return NULL;
     }
     cJSON_AddStringToObject(pSubJson, "Hbt", "1");
     cJSON_AddItemToObject(pJsonRoot, "d", pSubJson);
     cJSON_AddStringToObject(pJsonRoot, "ts", ts);
 
-    //char * p = cJSON_Print(pJsonRoot);
     *payload = cJSON_PrintUnformatted(pJsonRoot);
 
     cJSON_Delete(pJsonRoot);
@@ -248,7 +229,6 @@ int DeviceStatusMessage(TEDGE_DEVICE_STATUS_STRUCT data, char **payload){
 
     //cJSON_Print cJSON_PrintUnformatted
     *payload = cJSON_PrintUnformatted(pJsonRoot);
-    //printf("%s\n",*payload);
 
     cJSON_Delete(pJsonRoot);
 
@@ -392,8 +372,6 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
 
     if(config.DeviceList != NULL){
         
-        //printf("DeviceNumber: %d\n",config.DeviceNumber);
-
         for(int idev = 0; idev< config.DeviceNumber; idev++){
 
             subJson_node_dev_name = cJSON_CreateObject();
@@ -611,8 +589,6 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
         cJSON_AddItemToObject(subJson_node_id, "Device", subJson_node_dev);
     }
 
-    //printf("[debug]: %s %s %s\n", config.PrimaryIP, config.BackupIP, config.Description);
-
     if(config.Name){
         cJSON_AddStringToObject(subJson_node_id, "Name", config.Name);
     }
@@ -643,6 +619,7 @@ int ConvertCreateOrUpdateConfig(int action, TNODE_CONFIG_STRUCT config, char **p
     return 0;
 }
 
+
 int ConvertDeleteConfig(int action, TNODE_CONFIG_STRUCT config, char **payload){
 
     cJSON * pJsonRoot = NULL;
@@ -672,8 +649,6 @@ int ConvertDeleteConfig(int action, TNODE_CONFIG_STRUCT config, char **payload){
 
     if(config.DeviceList != NULL){
         
-        //printf("DeviceNumber: %d\n",config.DeviceNumber);
-
         for(int idev = 0; idev< config.DeviceNumber; idev++){
 
             subJson_node_dev_name = cJSON_CreateObject();

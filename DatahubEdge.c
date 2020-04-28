@@ -277,8 +277,15 @@ void connect_callback(struct mosquitto *mosq, void *userdata, int result){
 }
 
 void disconnect_callback(struct mosquitto *mosq, void *userdata, int result){
-	printf("disconnect_callback\n");
+
 	IsConnected = false;
+	
+	ConnectType cType = DCCS;
+	if ( option.ConnectType == cType ){
+		getCredentialFromDCCS();
+	}
+	
+	event_disconnect.callback();
 }
 
 void log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str){

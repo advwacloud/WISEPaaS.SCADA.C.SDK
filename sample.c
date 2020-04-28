@@ -11,6 +11,7 @@
 
 #include "DatahubEdge.h"
 
+/* create a sleep function used for demo */
 int nsleep(long miliseconds)
 {
    struct timespec req, rem;
@@ -28,8 +29,10 @@ int nsleep(long miliseconds)
    return nanosleep(&req , &rem);
 }
 
+
 bool IsConnected = false;
 
+/* create event callback */
 void edgeAgent_Connected(){
     printf("Connect success\n");
     IsConnected = true;
@@ -98,7 +101,7 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.NodeId = "92fd87bf-be44-404f-9971-be0c7eb726e4"; // your scada Id
+	options.NodeId = "0ceca7db-76b6-41b5-9c2b-756ada849a6c"; // your node Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; // set your connect type: DCCS or MQTT
@@ -109,7 +112,7 @@ int main(int argc, char *argv[]) {
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "3d0d77aacfd78e7ef16dc02cda7b3a95"; // your CredentialKey
+			options.DCCS.CredentialKey = "88485e3211a0c9d56776bedf38fa61r9"; // your CredentialKey
 			options.DCCS.APIUrl = "https://api-dccs-ensaas.sa.wise-paas.com/"; 
 			break;
 
@@ -153,9 +156,7 @@ int main(int argc, char *argv[]) {
             analogTag[j].Name = simTagName;    
             analogTag[j].Description = "description_update";          
             analogTag[j].ReadOnly = false;
-
             // analogTag[j].ArraySize = array_size;   /* used for array tag */
-
             // analogTag[j].AlarmStatus = false;
             // analogTag[j].SpanHigh = 1000;
             // analogTag[j].SpanLow = 0;
@@ -167,9 +168,7 @@ int main(int argc, char *argv[]) {
         {
             asprintf(&simTagName, "%s_%d", "TagName_dis", j);
             discreteTag[j].Name = simTagName;
-
             // discreteTag[j].ArraySize = 0;    /* used for array tag */
-
             // discreteTag[j].Description = "description_d";
             // discreteTag[j].ReadOnly = false;
             // discreteTag[j].AlarmStatus = false;
