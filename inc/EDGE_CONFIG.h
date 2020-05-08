@@ -12,7 +12,7 @@ typedef struct ANALOG_TAG_CONFIG {
     int ArraySize;
     bool AlarmStatus;
     bool NeedLog;
-
+    int Deadband;
 	double SpanHigh;
     double SpanLow;
     char * EngineerUnit;
@@ -35,7 +35,6 @@ typedef struct DISCRETE_TAG_CONFIG {
     int ArraySize;
     bool AlarmStatus;
     bool NeedLog;
-
     char * State0;
     char * State1;
     char * State2;

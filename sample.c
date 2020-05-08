@@ -12,23 +12,10 @@
 #include "DatahubEdge.h"
 
 /* create a sleep function used for demo */
-int nsleep(long miliseconds)
-{
-    struct timespec req, rem;
+int nsleep(long miliseconds);
 
-    if(miliseconds > 999)
-    {   
-        req.tv_sec = (int)(miliseconds / 1000);                            /* Must be Non-Negative */
-        req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
-    }   
-    else
-    {   
-        req.tv_sec = 0;                         /* Must be Non-Negative */
-        req.tv_nsec = miliseconds * 1000000;    /* Must be in range of 0 to 999999999 */
-    }   
-    return nanosleep(&req , &rem);
-}
-
+/* rand string used for demo */
+char *randstring(size_t length);
 
 bool IsConnected = false;
 
@@ -62,11 +49,9 @@ int main(int argc, char *argv[]) {
     void (*Constructor)(TOPTION_STRUCT);
     void (*Connect)();
     void (*Disconnect)();
-    int (*UploadConfig)(ActionType, TNODE_CONFIG_STRUCT);
-    int (*SendData)(TEDGE_DATA_STRUCT);
-    int (*SendDeviceStatus)(TEDGE_DEVICE_STATUS_STRUCT);
-
-    char *error;
+    int  (*UploadConfig)(ActionType, TNODE_CONFIG_STRUCT);
+    int  (*SendData)(TEDGE_DATA_STRUCT);
+    int  (*SendDeviceStatus)(TEDGE_DEVICE_STATUS_STRUCT);
 
     void *handle;
     handle = dlopen ("./DatahubEdge.so.1.0.2", RTLD_LAZY);
@@ -87,11 +72,6 @@ int main(int argc, char *argv[]) {
     SendData = dlsym(handle, "SendData");
     SendDeviceStatus = dlsym(handle, "SendDeviceStatus");
 
-    if ((error = dlerror()) != NULL)  {
-        fputs(error, stderr);
-        exit(1);
-    }
-
 /*  Set Event */
     SetConnectEvent(edgeAgent_Connected);
     SetDisconnectEvent(edgeAgent_Disconnected);
@@ -101,7 +81,7 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.NodeId = "0ceca7db-76b6-41b5-9c2b-756ada849a6c"; // your node Id
+	options.NodeId = "caab87ba-a085-4ad7-970e-9569a554967f"; // your node Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; // set your connect type: DCCS or MQTT
@@ -112,7 +92,7 @@ int main(int argc, char *argv[]) {
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "88485e3211a0c9d56776bedf38fa61r9"; // your CredentialKey
+			options.DCCS.CredentialKey = "3e3897fc063226e26694af09da2284gd"; // your CredentialKey
 			options.DCCS.APIUrl = "https://api-dccs-ensaas.sa.wise-paas.com/"; 
 			break;
 
@@ -134,7 +114,7 @@ int main(int argc, char *argv[]) {
     config.Name = "test_node_01";
     config.Type = 1;
 
-    int device_num = 1, analog_tag_num = 10, discrete_tag_num = 10, text_tag_num = 10;
+    int device_num = 5, analog_tag_num = 10, discrete_tag_num = 10, text_tag_num = 10;
 
     PTDEVICE_CONFIG_STRUCT device = malloc(device_num * sizeof(struct DEVICE_CONFIG_STRUCT));
     PTANALOG_TAG_CONFIG analogTag = malloc(analog_tag_num * sizeof(struct ANALOG_TAG_CONFIG));
@@ -156,10 +136,11 @@ int main(int argc, char *argv[]) {
             analogTag[j].Name = simTagName;    
             analogTag[j].Description = "description_update";          
             analogTag[j].ReadOnly = false;
-            // analogTag[j].ArraySize = array_size;   /* used for array tag */
+            analogTag[j].Deadband = 1;
+            analogTag[j].SpanHigh = 1000;
+            analogTag[j].SpanLow = 0;
+            analogTag[j].ArraySize = array_size;   /* used for array tag */
             // analogTag[j].AlarmStatus = false;
-            // analogTag[j].SpanHigh = 1000;
-            // analogTag[j].SpanLow = 0;
             // analogTag[j].EngineerUnit = "enuit";
             // analogTag[j].IntegerDisplayFormat = 4;
             // analogTag[j].FractionDisplayFormat = 2;
@@ -172,14 +153,6 @@ int main(int argc, char *argv[]) {
             // discreteTag[j].Description = "description_d";
             // discreteTag[j].ReadOnly = false;
             // discreteTag[j].AlarmStatus = false;
-            // discreteTag[j].State0 = "0";
-            // discreteTag[j].State1 = "1";
-            // discreteTag[j].State2 = "";
-            // discreteTag[j].State3 = "";
-            // discreteTag[j].State4 = "";
-            // discreteTag[j].State5 = "";
-            // discreteTag[j].State6 = "";
-            // discreteTag[j].State7 = "";
         }
         for ( int j = 0; j < text_tag_num; j++ )
         {
@@ -198,7 +171,7 @@ int main(int argc, char *argv[]) {
         device[i].Name = simDevName;
         device[i].Type = "DType";
         device[i].Description = "DDESC";
-        //device[i].RetentionPolicyName = ""; //USED_RP_NAME
+        //device[i].RetentionPolicyName = ""; // USED_RP_NAME
 
         device[i].AnalogNumber = analog_tag_num;
         device[i].DiscreteNumber = discrete_tag_num;
@@ -227,14 +200,11 @@ int main(int argc, char *argv[]) {
 
 /* Set Data Content */
     TEDGE_DATA_STRUCT data;
-
     PTEDGE_DEVICE_STRUCT data_device = malloc(device_num * sizeof(struct EDGE_DEVICE_STRUCT));
-
     PTEDGE_ANALOG_TAG_STRUCT analog_data_tag = malloc(analog_tag_num * sizeof(struct EDGE_ANALOG_TAG_STRUCT));
     PTEDGE_DISCRETE_TAG_STRUCT discrete_data_tag = malloc(discrete_tag_num * sizeof(struct EDGE_DISCRETE_TAG_STRUCT));
     PTEDGE_TEXT_TAG_STRUCT text_data_tag = malloc(text_tag_num * sizeof(struct EDGE_TEXT_TAG_STRUCT));
-
-    PTEDG_ANALOG_ARRAY_TAG_STRUCT analog_data_array_tag = malloc(3 * sizeof(struct EDGE_ANALOG_ARRAY_TAG_STRUCT));
+    PTEDG_ANALOG_ARRAY_TAG_STRUCT analog_data_array_tag = malloc(array_size * sizeof(struct EDGE_ANALOG_ARRAY_TAG_STRUCT));
 
 /* Use SDK API */
     Constructor(options);
@@ -245,44 +215,72 @@ int main(int argc, char *argv[]) {
     UploadConfig(action, config);
     SendDeviceStatus(status);
 
-    double value = 0; 
+    double analog_sim_data = 0; 
+    unsigned int discrete_sim_data = 0;
+    char * text_sim_data = "iamtest";
 
     while(1){
-
-        if( value >= 1000 ){ value =0; } // simulation values 0 ~ 1000
-        value ++;
-
         nsleep(1000); // send simulation per sec
 
         for(int i = 0; i < device_num; i++){
             for ( int j = 0; j < analog_tag_num; j++ ){
-
                 asprintf(&simTagName, "%s_%d", "TagName_ana", j);
                 analog_data_tag[j].Name = simTagName;
-	            analog_data_tag[j].Value = value;
-                /* array tag data */
-                /*
+	            analog_data_tag[j].Value = analog_sim_data;
+                /* array tag data */          
                 for(int k = 0; k< array_size; k++){
                     analog_data_array_tag[k].Index = k;
-                    analog_data_array_tag[k].Value = value;
+                    analog_data_array_tag[k].Value = analog_sim_data;
                 }
                 analog_data_tag[j].ArraySize = array_size;
-                analog_data_tag[j].ArrayList = analog_data_array_tag;
-                */
+                analog_data_tag[j].ArrayList = analog_data_array_tag; 
+            }
 
+            for ( int j = 0; j < discrete_tag_num; j++ ){
+                asprintf(&simTagName, "%s_%d", "TagName_dis", j);
+                discrete_data_tag[j].Name = simTagName;
+	            discrete_data_tag[j].Value = discrete_sim_data;
+                /* array tag data */          
+                // for(int k = 0; k< array_size; k++){
+                //     analog_data_array_tag[k].Index = k;
+                //     analog_data_array_tag[k].Value = value;
+                // }
+                // analog_data_tag[j].ArraySize = array_size;
+                // analog_data_tag[j].ArrayList = analog_data_array_tag;
             }
             data_device[i].AnalogTagNumber = analog_tag_num;
             data_device[i].AnalogTagList = analog_data_tag;
+
+            data_device[i].DiscreteTagNumber = discrete_tag_num;
+            data_device[i].DiscreteTagList = discrete_data_tag;
+
+            data_device[i].TextTagNumber = 0;
 
             asprintf(&simDevId, "%s_%d", "DeviceID", i);
             data_device[i].Id = simDevId;
         }
         data.DeviceNumber = device_num;
         data.DeviceList = data_device;
-
         //data.Time = "2020-04-21T09:47:03.633Z";  //%Y-%m-%dT%H:%M:%S.MSZ
+        
         SendData(data);
+
+        /* data simulator */
+        if( analog_sim_data >= 1000 ){ 
+            analog_sim_data = 0; 
+        } else {
+            analog_sim_data++;
+        }
+        if( discrete_sim_data >= 10 ){ 
+            discrete_sim_data = 0; 
+        } else {
+            discrete_sim_data++;
+        }
+        text_sim_data = randstring(6);
+        
     }
+
+ 
     
 /* release */
     free(device);
@@ -298,5 +296,40 @@ int main(int argc, char *argv[]) {
     dlclose(handle);
 
     return 0;
+}
+
+/* create a sleep function used for demo */
+int nsleep(long miliseconds)
+{
+    struct timespec req, rem;
+
+    if(miliseconds > 999) {   
+        req.tv_sec = (int)(miliseconds / 1000);                            /* Must be Non-Negative */
+        req.tv_nsec = (miliseconds - ((long)req.tv_sec * 1000)) * 1000000; /* Must be in range of 0 to 999999999 */
+    }   
+    else {   
+        req.tv_sec = 0;                         /* Must be Non-Negative */
+        req.tv_nsec = miliseconds * 1000000;    /* Must be in range of 0 to 999999999 */
+    }   
+    return nanosleep(&req , &rem);
+}
+
+char *randstring(size_t length) {
+    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";        
+    char *randomString = NULL;
+
+    if (length) {
+        randomString = malloc(sizeof(char) * (length +1));
+
+        if (randomString) {            
+            for (int n = 0;n < length;n++) {            
+                int key = rand() % (int)(sizeof(charset) -1);
+                randomString[n] = charset[key];
+            }
+
+            randomString[length] = '\0';
+        }
+    }
+    return randomString;
 }
 

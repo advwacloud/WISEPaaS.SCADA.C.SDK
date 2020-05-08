@@ -15,7 +15,4 @@
 #include "mosquitto.h"
 
 #include "message.h"
-//#include "cJSON.h"
-
-//#include "EDGE_DATA.h"
 #endif

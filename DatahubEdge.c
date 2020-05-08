@@ -14,6 +14,7 @@
 #include <unistd.h>
 
 #include "DatahubEdge.h"
+#include "inc/cJSON.h"
 
 TOPTION_STRUCT option;
 struct mosquitto *mosq = NULL;
@@ -31,7 +32,7 @@ char *_insertSql = NULL;
 char *_querySql = NULL;
 char *_deleteSql = NULL;
 
-//int limit = 10;
+char *json_ref = NULL;
 
 /* prototypes */
 void* heartbeat_proc(void *secs);
@@ -89,7 +90,6 @@ char *base64_encode(const unsigned char *data,
 
     return encoded_data;
 }
-
 
 unsigned char *base64_decode(const char *data,
                             size_t input_length,
@@ -169,6 +169,16 @@ TCALLBACK_STRUCT event_connect;
 TCALLBACK_STRUCT event_disconnect;
 TRECIEVE_STRUCT event_recieve;
 
+//#define PREVIOUD_BUF_LEN 2048
+// typedef struct EDGE_PREVIOUS_DATA
+// {
+//     char *key;		  // did//tagname//index
+//     double value;     // tag value
+// } TEDGE_PREVIOUS_DATA;
+
+// TCALLBACK_STRUCT previous;
+// PTEDGE_PREVIOUS_DATA previous = malloc(2048 * sizeof(struct EDGE_PREVIOUS_DATA));
+
 void initdb(){
 	if (sqlite3_open_v2("recover.db3", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL)) {
 		return;
@@ -176,6 +186,31 @@ void initdb(){
 	sqlite3_exec(db, CreateSql, 0, 0, NULL);
 	//sqlite3_free_table(result);
 	//sqlite3_close(db);
+}
+
+int read_last_config(){
+	const char *ConfigSaveFile = "config.json";
+	FILE *file;
+
+	file = fopen(ConfigSaveFile,"rb");
+
+	if (file == NULL) {
+      fprintf(stderr, "\nCant read the last configuration\n");
+	  return 1;
+    }
+
+	fseek(file, 0, SEEK_END);
+	long len = ftell(file);
+	fseek(file, 0, SEEK_SET);
+
+	free(json_ref);
+	json_ref = (char*) malloc(len+1);
+
+	fread(json_ref, 1, len, file);
+
+	fclose(file);
+
+	return 0;
 }
 
 struct string {
@@ -353,6 +388,12 @@ void Constructor(TOPTION_STRUCT query) {
 
 	build_decoding_table();
 	initdb();
+	read_last_config();
+
+	InitPrevious();
+	
+
+	//previous = malloc(PREVIOUD_BUF_LEN * szieof(struct EDGE_PREVIOUS_DATA));
 }
 
 void SetConnectEvent(void (*callback)(void)){
@@ -414,10 +455,12 @@ int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT config){
 	{
 		case 0: // Create
 			result = ConvertCreateOrUpdateConfig( 1, config, &payload, option.Heartbeat );
+			SaveConfig(1, config);
 			//printf("%s\n",payload);
 			break;
 		case 1: // Update
 			result = ConvertCreateOrUpdateConfig( 2, config, &payload, option.Heartbeat );
+			SaveConfig(2, config);
 			break;
 		case 2: // Delete
 			result = ConvertDeleteConfig( 3, config, &payload );
@@ -439,6 +482,8 @@ int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT config){
 	if (rc) {
 		fprintf(stderr, "Can't publish config to Mosquitto server\n");
 		return (1);
+	} else{
+		read_last_config(); // update the last config
 	}
 	return 0;
 }
@@ -477,38 +522,39 @@ int SendDeviceStatus(TEDGE_DEVICE_STATUS_STRUCT data){
 int SendData(TEDGE_DATA_STRUCT data){
 
 	char *payload = NULL;
-	bool result = false;
+	bool valid = false;
 
-	result = SendDataMessage( data, &payload );
+	valid = SendDataMessage( data, &payload, &json_ref);
 
 	//printf("%d\n",IsConnected);
-	if(IsConnected){
-		int rc = mosquitto_publish(
-			mosq, // a valid mosquitto instance.
-			NULL,
-			_dataTopic, // topic
-			strlen(payload), // payloadlen
-			payload, // payload
-			1,
-			false);
+	if(valid){
+		if(IsConnected){
+			int rc = mosquitto_publish(
+				mosq, // a valid mosquitto instance.
+				NULL,
+				_dataTopic, // topic
+				strlen(payload), // payloadlen
+				payload, // payload
+				1,
+				false);
 
-		if (rc) {
-			fprintf(stderr, "Can't publish data to Mosquitto server\n");
-			return (1);
+			if (rc) {
+				fprintf(stderr, "Can't publish data to Mosquitto server\n");
+				return (1);
+			}
+		}
+		else{
+			char *trans = NULL; // base64 test
+			size_t size = 0;
+
+			trans = base64_encode(payload, strlen(payload), &size);
+
+			asprintf(&_insertSql, InsertSql, trans);
+			sqlite3_exec(db, _insertSql, 0, 0, NULL);
+			free(trans);
 		}
 	}
-	else{
-		char *trans = NULL; // base64 test
-		size_t size = 0;
 
-		trans = base64_encode(payload, strlen(payload), &size);
-
-		asprintf(&_insertSql, InsertSql, trans);
-		sqlite3_exec(db, _insertSql, 0, 0, NULL);
-		free(trans);
-	}
-
-	//printf("%s\n",payload);
 	free(payload);
 	return 0;
 }
