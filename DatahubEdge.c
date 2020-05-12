@@ -1,5 +1,3 @@
-
-//#define _CRT_SECURE_NO_WARNINGS
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #endif
@@ -33,6 +31,12 @@ char *_querySql = NULL;
 char *_deleteSql = NULL;
 
 char *json_ref = NULL;
+
+/* sqllite */
+int rows = 0, cols = 0 ;
+sqlite3 *db;
+char **result;
+char *ids = NULL;
 
 /* prototypes */
 void* heartbeat_proc(void *secs);
@@ -151,10 +155,16 @@ int nsleep(long miliseconds)
    	return nanosleep(&req , &rem);
 }
 
-/* sqllite */
-int rows = 0, cols = 0 ;
-sqlite3 *db;
-char **result;
+static int data_callback(void *data, int argc, char **argv, char **azColName){
+	int i;
+	for(i=0; i<argc; i++){
+		if(strcmp(azColName[i], "id") == 0){
+			asprintf(&_deleteSql, DeleteSql, argv[i]);
+			sqlite3_exec(db, _deleteSql, 0, 0, NULL);
+		}
+	}
+	return 0;
+}
 
 /* event struct */
 typedef struct{
@@ -168,16 +178,6 @@ typedef struct{
 TCALLBACK_STRUCT event_connect;
 TCALLBACK_STRUCT event_disconnect;
 TRECIEVE_STRUCT event_recieve;
-
-//#define PREVIOUD_BUF_LEN 2048
-// typedef struct EDGE_PREVIOUS_DATA
-// {
-//     char *key;		  // did//tagname//index
-//     double value;     // tag value
-// } TEDGE_PREVIOUS_DATA;
-
-// TCALLBACK_STRUCT previous;
-// PTEDGE_PREVIOUS_DATA previous = malloc(2048 * sizeof(struct EDGE_PREVIOUS_DATA));
 
 void initdb(){
 	if (sqlite3_open_v2("recover.db3", &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL)) {
@@ -195,8 +195,8 @@ int read_last_config(){
 	file = fopen(ConfigSaveFile,"rb");
 
 	if (file == NULL) {
-      fprintf(stderr, "\nCant read the last configuration\n");
-	  return 1;
+		fprintf(stderr, "\nCant read the last configuration\n");
+		return 1;
     }
 
 	fseek(file, 0, SEEK_END);
@@ -523,10 +523,8 @@ int SendData(TEDGE_DATA_STRUCT data){
 
 	char *payload = NULL;
 	bool valid = false;
-
 	valid = SendDataMessage( data, &payload, &json_ref);
 
-	//printf("%d\n",IsConnected);
 	if(valid){
 		if(IsConnected){
 			int rc = mosquitto_publish(
@@ -544,14 +542,12 @@ int SendData(TEDGE_DATA_STRUCT data){
 			}
 		}
 		else{
-			char *trans = NULL; // base64 test
+			//char *trans = NULL; // base64 test
 			size_t size = 0;
-
-			trans = base64_encode(payload, strlen(payload), &size);
-
-			asprintf(&_insertSql, InsertSql, trans);
-			sqlite3_exec(db, _insertSql, 0, 0, NULL);
-			free(trans);
+			//trans = base64_encode(payload, strlen(payload), &size);
+			asprintf(&_insertSql, InsertSql, payload);
+			int result = sqlite3_exec(db, _insertSql, 0, 0, NULL);
+			//free(trans);
 		}
 	}
 
@@ -599,42 +595,36 @@ void* recover_proc(void *secs)
 	while(option.DataRecover){
 
 		if(IsConnected){
-
 			nsleep(seconds*1000);
-			//sleep(seconds);
 
 			asprintf(&_querySql, QuerysSql, rcov_limit);
 			sqlite3_get_table(db , _querySql, &result , &rows, &cols, NULL);
+			//char *trans = NULL; // base64 test
+			//size_t size = 0;
 
-			char *trans = NULL; // base64 test
-			size_t size = 0;
+			for (int i=0; i<rows; i++) {
+				if(strcmp(result[i*cols+1], "message") != 0){
+					//trans = base64_decode(result[i*cols+1],strlen(result[i*cols+1])/3*4, &size);
+					int rc = mosquitto_publish(
+						mosq, // a valid mosquitto instance.
+						NULL,
+						_dataTopic, // topic
+						strlen(result[i*cols+1]), // payloadlens
+						result[i*cols+1], // payload
+						1,
+						false);
 
-			for (int i=0;i<rows;i++) {
+					if (rc) {
+						fprintf(stderr, "Can't publish data to Mosquitto server\n");
+					}
+					printf("\n");
 
-				trans = base64_decode(result[i*cols+1],strlen(result[i*cols+1])/3*4, &size);
-				//for (int j=0;j<cols;j++) {
-				int rc = mosquitto_publish(
-					mosq, // a valid mosquitto instance.
-					NULL,
-					_dataTopic, // topic
-					strlen(trans), // payloadlens
-					trans, // payload
-					1,
-					false);
-
-				if (rc) {
-					fprintf(stderr, "Can't publish data to Mosquitto server\n");
+					sqlite3_exec(db, _querySql, data_callback, 0, NULL); // delete id
 				}
-				//}
-				printf("\n");
 			}
-
-			asprintf(&_deleteSql, DeleteSql, rcov_limit);
-			sqlite3_get_table(db , _deleteSql, &result , &rows, &cols, NULL);
-			free(trans);
+			//free(trans);
 		}
 	}
-
     pthread_exit(NULL);
 }
 
