@@ -11,7 +11,7 @@ char * DisconnectMessage();
 
 void HearbeatMessage(char **payload);
 
-void ParseConnectJson(bool secure, char *pMsg, char **host, char **user, char **pwd, int *port);
+bool ParseConnectJson(bool secure, char *pMsg, char **host, char **user, char **pwd, int *port);
 
 void ParseEventJson(char *pMsg, char **pCmd, char **pVal);
 

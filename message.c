@@ -44,7 +44,7 @@ char * _getTime(){
     return ts; 
 }
 
-void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char **pPwd, int *pPort)
+bool ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char **pPwd, int *pPort)
 {
     cJSON * root = NULL;
     cJSON * cred = NULL;
@@ -58,18 +58,22 @@ void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char 
     cJSON * port = NULL;
 
     cJSON * msg = NULL;
-
+        
     root = cJSON_Parse(pMsg);     
     if (!root) 
     {
-        printf("Error before: [%s]\n",cJSON_GetErrorPtr());
+        printf("Error before: [%s]\n", cJSON_GetErrorPtr());      
+        cJSON_Delete(root);   
+        return false;
     }
     else
     {
         msg = cJSON_GetObjectItem(root, "message");
 
         if(cJSON_Print(msg) != NULL){
-            printf("get dccs error: %s\n", cJSON_Print(msg));
+            printf("get dccs error: %s\n", cJSON_Print(msg));  
+            cJSON_Delete(root);
+            return false;
         }
         else{
 
@@ -82,10 +86,10 @@ void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char 
             protocols = cJSON_GetObjectItem(cred, "protocols");   
 
             if(secure){
-            mqttssl = cJSON_GetObjectItem(protocols, "mqtt+ssl"); 
+              mqttssl = cJSON_GetObjectItem(protocols, "mqtt+ssl"); 
             }
             else{
-            mqttssl = cJSON_GetObjectItem(protocols, "mqtt");    
+              mqttssl = cJSON_GetObjectItem(protocols, "mqtt");    
             }
 
             username = cJSON_GetObjectItem(mqttssl, "username"); 
@@ -95,10 +99,13 @@ void ParseConnectJson(bool secure, char *pMsg, char **pHost, char **pUser, char 
             asprintf(pUser,"%s",username->valuestring);
             asprintf(pPwd,"%s",password->valuestring);
             *pPort = port->valueint;
+            
+            cJSON_Delete(root);
+            return true;
         }
     }
 
-    cJSON_Delete(root);
+    // cJSON_Delete(root);
 }
 
 void ParseEventJson(char *pMsg, char **pCmd, char **pVal)
