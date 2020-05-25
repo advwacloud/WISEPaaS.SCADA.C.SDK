@@ -41,10 +41,11 @@ char *ids = NULL;
 /* prototypes */
 void* heartbeat_proc(void *secs);
 void* recover_proc(void *secs);
+void* reconnect_proc(void *secs);
 void* ovpn_proc();
 
 /* create thread */
-pthread_t thread_hbt_id, thread_rcov_id, thread_rcov_ovpn;
+pthread_t thread_hbt_id, thread_rcov_id, thread_rcov_ovpn, thread_recon_id;
 
 /* base64 */
 static char encoding_table[] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
@@ -195,7 +196,7 @@ int read_last_config(){
 	file = fopen(ConfigSaveFile,"rb");
 
 	if (file == NULL) {
-		fprintf(stderr, "\nCant read the last configuration\n");
+		//fprintf(stderr, "\nCant read the last configuration\n");
 		return 1;
     }
 
@@ -244,7 +245,7 @@ size_t curlWriteFunc(void *ptr, size_t size, size_t nmemb, struct string *s){
 
 bool getCredentialFromDCCS(){
 	
-  bool result = false;
+  	bool result = false;
 	CURL *curl;
 	CURLcode res;
 
@@ -265,19 +266,18 @@ bool getCredentialFromDCCS(){
    
 		res = curl_easy_perform(curl);
    
-    if(res == 0){   // CURLE_OK = 0
-      result = ParseConnectJson(option.UseSecure, s.ptr, &option.MQTT.HostName, &option.MQTT.Username, &option.MQTT.Password, &option.MQTT.Port);
-    }
+		if(res == 0){   // CURLE_OK = 0
+			result = ParseConnectJson(option.UseSecure, s.ptr, &option.MQTT.HostName, &option.MQTT.Username, &option.MQTT.Password, &option.MQTT.Port);
+		}
 		//ParseConnectJson(option.UseSecure, s.ptr, &option.MQTT.HostName, &option.MQTT.Username, &option.MQTT.Password, &option.MQTT.Port);
 	
 		free(s.ptr);
-
 		/* always cleanup */
 		curl_easy_cleanup(curl);
 	}
 
 	free(url);
-  return result;
+ 	return result;
 }
 
 void message_callback(struct mosquitto *mosq, void *userdata, const struct mosquitto_message *message){
@@ -377,7 +377,7 @@ void Constructor(TOPTION_STRUCT query) {
  
 	mosquitto_reconnect_delay_set(mosq, 3, 10, false);
 
-  int rc = 0;
+  	int rc = 0;
 	if(option.Heartbeat >= 0){
 		rc = pthread_create(&thread_hbt_id, NULL, heartbeat_proc, (void*)(size_t) option.Heartbeat);
 		if(rc){
@@ -398,11 +398,7 @@ void Constructor(TOPTION_STRUCT query) {
 	build_decoding_table();
 	initdb();
 	read_last_config();
-
 	InitPrevious();
-	
-
-	//previous = malloc(PREVIOUD_BUF_LEN * szieof(struct EDGE_PREVIOUS_DATA));
 }
 
 void SetConnectEvent(void (*callback)(void)){
@@ -419,35 +415,42 @@ void SetMessageReceived(void (*callback)(char *cmd, char *val) ){
 
 void Connect() {
 
+	bool bCreate = false;
+
 	ConnectType cType = DCCS;
-	if ( option.ConnectType == cType ){
-    if(option.AutoReconnect){
-  		while(!getCredentialFromDCCS()){
-         printf("fail to get Credential from DCCS\n");
-         nsleep(option.ReconnectInterval);
-      }
-    }else{
-      getCredentialFromDCCS();
-    }
+	if ( option.ConnectType == cType ){ // DCCS
+		if(!getCredentialFromDCCS()){
+			printf("fail to get Credential from DCCS\n");
+			bCreate = true;
+		} else{
+			mosquitto_loop_start(mosq); 
+			mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
+
+			if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+				mosquitto_loop_stop(mosq, true); // connect failed
+				bCreate = true;
+			} else{
+				mosquitto_loop_start(mosq); // connect successful
+			}
+		}
+	} else{ // MQTT
+		mosquitto_loop_start(mosq); 
+		mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
+
+		if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+			mosquitto_loop_stop(mosq, true); // connect failed
+			bCreate = true;
+		}else{
+			mosquitto_loop_start(mosq); // connect successful
+		}
 	}
 
-  mosquitto_loop_start(mosq); 
-	mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
-	
-  if(option.AutoReconnect){
-    while(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
-      printf("fail to connect to mosquitto\n");
-      nsleep(option.ReconnectInterval);
-    }
-  }else{
-    mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat);
-  }
-  
-	mosquitto_loop_start(mosq); 
-	// if (mosquitto_connect_async(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
-	// 	fprintf(stderr, "Unable to connect.\n");
-	// 	return 1;
-	// }
+	if(option.AutoReconnect && bCreate){
+		int rc = pthread_create(&thread_recon_id, NULL, reconnect_proc, (void*)(size_t) option.ReconnectInterval);
+		if(rc){
+			printf("=== Error Creating reconnect thread\n");
+		} 
+	}
 }
 
 void Disconnect(){
@@ -643,8 +646,6 @@ void* recover_proc(void *secs)
 					if (rc) {
 						fprintf(stderr, "Can't publish data to Mosquitto server\n");
 					}
-					printf("\n");
-
 					sqlite3_exec(db, _querySql, data_callback, 0, NULL); // delete id
 				}
 			}
@@ -653,6 +654,46 @@ void* recover_proc(void *secs)
 	}
     pthread_exit(NULL);
 }
+
+/* start the timing in re-connect thread */
+void* reconnect_proc(void *secs)
+{
+	int seconds = (int)(size_t) secs;
+
+	while(!IsConnected){
+
+		nsleep(seconds*1000);
+
+		ConnectType cType = DCCS;
+		if ( option.ConnectType == cType ){ // DCCS
+			if(!getCredentialFromDCCS()){
+				printf("fail to get Credential from DCCS\n");
+			} else{
+				mosquitto_loop_start(mosq); 
+				mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
+
+				if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+					mosquitto_loop_stop(mosq, true); // connect failed
+				} else{
+					mosquitto_loop_start(mosq); // connect successful
+					break;
+				}
+			}
+		} else{ // MQTT
+			mosquitto_loop_start(mosq); 
+			mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
+
+			if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+				mosquitto_loop_stop(mosq, true); // connect failed
+			} else{
+				mosquitto_loop_start(mosq); // connect successful
+				break;
+			}
+		}
+	}
+    pthread_exit(NULL);
+}
+
 
 void* ovpn_proc(void *secs)
 {
