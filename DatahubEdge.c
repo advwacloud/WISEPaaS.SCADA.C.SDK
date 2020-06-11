@@ -426,7 +426,7 @@ void Connect() {
 			mosquitto_loop_start(mosq); 
 			mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
 
-			if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+			if(mosquitto_connect_async(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
 				mosquitto_loop_stop(mosq, true); // connect failed
 				bCreate = true;
 			} else{
@@ -437,7 +437,7 @@ void Connect() {
 		mosquitto_loop_start(mosq); 
 		mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
 
-		if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+		if(mosquitto_connect_async(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
 			mosquitto_loop_stop(mosq, true); // connect failed
 			bCreate = true;
 		}else{
@@ -469,10 +469,11 @@ void Disconnect(){
 		false);
 
 	free(payload);
+ 
+	//if (mosquitto_disconnect(mosq)){
+	//	fprintf(stderr, "Unable to disconnect.\n");
+	//}
 
-	if (mosquitto_disconnect(mosq)){
-		fprintf(stderr, "Unable to disconnect.\n");
-	}
 	mosquitto_loop_stop(mosq, true);
 }
 
@@ -588,6 +589,7 @@ int SendData(TEDGE_DATA_STRUCT data){
 void* heartbeat_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
+  pthread_detach(pthread_self());
 	EdgeType eType = Gatway;
 
 	char *payload = NULL;
@@ -620,7 +622,7 @@ void* heartbeat_proc(void *secs)
 void* recover_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
-
+  pthread_detach(pthread_self());
 	while(option.DataRecover){
 
 		if(IsConnected){
@@ -659,7 +661,7 @@ void* recover_proc(void *secs)
 void* reconnect_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
-
+  pthread_detach(pthread_self());
 	while(!IsConnected){
 
 		nsleep(seconds*1000);
