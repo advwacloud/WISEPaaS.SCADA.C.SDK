@@ -358,7 +358,12 @@ void Constructor(TOPTION_STRUCT query) {
 		asprintf(&_cmdTopic, "%s", _deviceCmdTopic);	
 	}
 
+	//mosquitto_lib_cleanup();
 	mosquitto_lib_init();
+
+	int major, minor, rev;
+	int ret = mosquitto_lib_version(&major, &minor, &rev);
+	fprintf(stdout, "[mosquitto version] major:%d, minor:%d, rev:%d\n", ret, major, minor, rev);
 
 	/* Create a new mosquitto client instance. */
 	mosq = mosquitto_new(NULL, clean_session, NULL); 
@@ -369,7 +374,20 @@ void Constructor(TOPTION_STRUCT query) {
 	size_t length = strlen(LastWillMessage());
 	mosquitto_will_set(mosq, _nodeConnTopic, length, LastWillMessage(), 1, true); //?
 	if ( option.UseSecure ){
+		// mosquitto_tls_insecure_set(mosq, true);
+		int ret = mosquitto_tls_opts_set(mosq, 0, "tlsv1.2", NULL);
+		if (ret) {
+			fprintf (stderr, "set tls opt failed %d\n", ret);
+			//exit(-1);
+		}
+
 		mosquitto_tls_insecure_set(mosq, true);
+		ret = mosquitto_tls_set(mosq, "./cert/ca.crt", NULL, "./cert/client.crt", "./cert/client.key", NULL);
+		if (ret) {
+			fprintf (stderr, "set tls failed %d\n", ret);
+			exit(-1); // exit the process
+		}
+		
 	}                 	
 	mosquitto_connect_callback_set(mosq, connect_callback);
 	mosquitto_disconnect_callback_set(mosq, disconnect_callback);
@@ -426,18 +444,19 @@ void Connect() {
 			mosquitto_loop_start(mosq); 
 			mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
 
-			if(mosquitto_connect_async(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+			if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
 				mosquitto_loop_stop(mosq, true); // connect failed
 				bCreate = true;
 			} else{
 				mosquitto_loop_start(mosq); // connect successful
 			}
+			
 		}
 	} else{ // MQTT
 		mosquitto_loop_start(mosq); 
 		mosquitto_username_pw_set(mosq, option.MQTT.Username, option.MQTT.Password);
 
-		if(mosquitto_connect_async(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
+		if(mosquitto_connect(mosq, option.MQTT.HostName, option.MQTT.Port, option.Heartbeat)){
 			mosquitto_loop_stop(mosq, true); // connect failed
 			bCreate = true;
 		}else{
@@ -469,11 +488,10 @@ void Disconnect(){
 		false);
 
 	free(payload);
- 
-	//if (mosquitto_disconnect(mosq)){
-	//	fprintf(stderr, "Unable to disconnect.\n");
-	//}
 
+	if (mosquitto_disconnect(mosq)){
+		fprintf(stderr, "Unable to disconnect.\n");
+	}
 	mosquitto_loop_stop(mosq, true);
 }
 
@@ -589,7 +607,6 @@ int SendData(TEDGE_DATA_STRUCT data){
 void* heartbeat_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
-  pthread_detach(pthread_self());
 	EdgeType eType = Gatway;
 
 	char *payload = NULL;
@@ -622,7 +639,7 @@ void* heartbeat_proc(void *secs)
 void* recover_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
-  pthread_detach(pthread_self());
+
 	while(option.DataRecover){
 
 		if(IsConnected){
@@ -661,7 +678,7 @@ void* recover_proc(void *secs)
 void* reconnect_proc(void *secs)
 {
 	int seconds = (int)(size_t) secs;
-  pthread_detach(pthread_self());
+
 	while(!IsConnected){
 
 		nsleep(seconds*1000);
