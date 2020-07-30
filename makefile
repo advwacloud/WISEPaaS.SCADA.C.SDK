@@ -2,9 +2,11 @@ all: openvpn build
 
 openvpn: openssl-link lzo-link openvpn-link WISEPaaS.Datahub.Edge.so.1.0.2
 
+security: 
+	./generate.sh --CA --CLI
+
 build: WISEPaaS.Datahub.Edge.so.1.0.2
 	gcc sample.c -ldl -g -o sample -std=c99
-	./generate.sh --CA --CLI
 
 WISEPaaS.Datahub.Edge.so.1.0.2: DatahubEdge.o cJSON.o message.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0
 	gcc -shared -Wl,-soname,DatahubEdge.so.1 -o DatahubEdge.so.1.0.2 DatahubEdge.o message.o cJSON.o libmosquitto.so libsqlite3.so libcurl.so.4.4.0

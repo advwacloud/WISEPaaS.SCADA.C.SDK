@@ -47,6 +47,7 @@ typedef struct DCCS_OPTION_STRUCT{
 } TDCCS_OPTION_STRUCT, * PTDCCS_OPTION_STRUCT;
 
 typedef struct OPTION_STRUCT {
+	bool CacheConfig;
 	bool AutoReconnect;
 	int ReconnectInterval;
 	char * NodeId;

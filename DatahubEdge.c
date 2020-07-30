@@ -17,6 +17,7 @@
 TOPTION_STRUCT option;
 struct mosquitto *mosq = NULL;
 bool IsConnected = false;
+bool IsCacheConfig = false;
 
 char *_configTopic;
 char *_dataTopic;
@@ -43,6 +44,7 @@ void* heartbeat_proc(void *secs);
 void* recover_proc(void *secs);
 void* reconnect_proc(void *secs);
 void* ovpn_proc();
+
 
 /* create thread */
 pthread_t thread_hbt_id, thread_rcov_id, thread_rcov_ovpn, thread_recon_id;
@@ -338,6 +340,7 @@ void Constructor(TOPTION_STRUCT query) {
 
 	option = query;
 	bool clean_session = true;
+	IsCacheConfig = option.CacheConfig;
 
 	/* create topic */
 	char *_nodeCmdTopic;
@@ -363,7 +366,7 @@ void Constructor(TOPTION_STRUCT query) {
 
 	int major, minor, rev;
 	int ret = mosquitto_lib_version(&major, &minor, &rev);
-	fprintf(stdout, "[mosquitto version] major:%d, minor:%d, rev:%d\n", ret, major, minor, rev);
+	//fprintf(stdout, "[mosquitto version] major:%d, minor:%d, rev:%d\n", ret, major, minor, rev);
 
 	/* Create a new mosquitto client instance. */
 	mosq = mosquitto_new(NULL, clean_session, NULL); 
@@ -503,12 +506,16 @@ int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT config){
 	{
 		case 0: // Create
 			result = ConvertCreateOrUpdateConfig( 1, config, &payload, option.Heartbeat );
-			SaveConfig(1, config);
+			if(IsCacheConfig){
+				SaveConfig(1, config);
+			}
 			//printf("%s\n",payload);
 			break;
 		case 1: // Update
 			result = ConvertCreateOrUpdateConfig( 2, config, &payload, option.Heartbeat );
-			SaveConfig(2, config);
+			if(IsCacheConfig){
+				SaveConfig(2, config);
+			}
 			break;
 		case 2: // Delete
 			result = ConvertDeleteConfig( 3, config, &payload );
@@ -530,8 +537,10 @@ int UploadConfig(ActionType action, TNODE_CONFIG_STRUCT config){
 	if (rc) {
 		fprintf(stderr, "Can't publish config to Mosquitto server\n");
 		return (1);
-	} else{
-		read_last_config(); // update the last config
+	} else {
+		if(IsCacheConfig){
+			read_last_config(); // update the last config
+		}
 	}
 	return 0;
 }
