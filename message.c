@@ -29,7 +29,7 @@ void InitPrevious(){
 char * _getTime(){
     time_t rawtime = time(NULL);
         
-    struct tm *ptm = localtime(&rawtime);
+    struct tm *ptm = gmtime(&rawtime);
     struct timeval tv;
 
     char buffer [80];
@@ -40,6 +40,8 @@ char * _getTime(){
     int milli = tv.tv_usec/1000; // micro sec
     
     sprintf(ts, "%s.%03dZ", buffer, milli);
+    
+    printf("%s\n",ts);
     
     return ts; 
 }
