@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
     int  (*SendDeviceStatus)(TEDGE_DEVICE_STATUS_STRUCT);
 
     void *handle;
-    handle = dlopen ("./DatahubEdge.so.1.0.2", RTLD_LAZY);
+    handle = dlopen ("./DatahubEdge.so.1.0.3", RTLD_LAZY);
 
     if (!handle) {
         fputs (dlerror(), stderr);
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 	TOPTION_STRUCT options;
 	options.AutoReconnect = true;
 	options.ReconnectInterval = 1000;
-	options.NodeId = "caab87ba-a085-4ad7-970e-9569a554967f"; // your node Id
+	options.NodeId = "YOUR_NODE_ID"; // your node Id
 	options.Heartbeat = 60;
 	options.DataRecover = true;
 	options.ConnectType = DCCS; // set your connect type: DCCS or MQTT
@@ -92,12 +92,12 @@ int main(int argc, char *argv[]) {
     switch (options.ConnectType)
 	{
 		case 1: // DCCS
-			options.DCCS.CredentialKey = "3e3897fc063226e26694af09da2284gd"; // your CredentialKey
-			options.DCCS.APIUrl = "https://api-dccs-ensaas.sa.wise-paas.com/"; 
+			options.DCCS.CredentialKey = "YOUR_CREDENTIAL_KEY"; // your CredentialKey
+			options.DCCS.APIUrl = "YOUR_API_URL"; 
 			break;
 
 		case 0: // MQTT
-			options.MQTT.HostName = "172.16.8.6";
+			options.MQTT.HostName = "YOUR_MQTT_HOST";
 			options.MQTT.Port = 1883;
 			options.MQTT.Username = "admin";
 			options.MQTT.Password = "admin";
