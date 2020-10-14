@@ -41,8 +41,6 @@ char * _getTime(){
     
     sprintf(ts, "%s.%03dZ", buffer, milli);
     
-    printf("%s\n",ts);
-    
     return ts; 
 }
 
@@ -504,7 +502,22 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload, char **json_ref){
 
     cJSON_AddItemToObject(pJsonRoot, "d", subJson_d);
     if(data.Time){
-        cJSON_AddStringToObject(pJsonRoot, "ts", data.Time);
+        
+        char * tld = strrchr(data.Time, '.'); 
+        struct tm ltm;
+        time_t epoch;
+        if ( strptime(data.Time, "%Y-%m-%d %H:%M:%S", &ltm) != NULL ){
+          epoch = mktime(&ltm);
+          
+           gmtime_r(&epoch,&ltm);
+    
+          char buffer [80];    
+          strftime(buffer, 80, "%Y-%m-%dT%H:%M:%S", &ltm);   
+          sprintf(ts, "%s%s", buffer, tld);    
+          cJSON_AddStringToObject(pJsonRoot, "ts", ts);
+        } else {
+          printf("fail to parse timestamp\n");
+        }
     }else{
         cJSON_AddStringToObject(pJsonRoot, "ts", ts);
     }
