@@ -392,6 +392,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload, char **json_ref){
                             cJSON_AddNumberToObject(subJson_node_array, idx, data.DeviceList[idev].AnalogTagList[itag].ArrayList[iarray].Value);  
                             cJSON_AddNumberToObject(subJsonPre_array, idx, data.DeviceList[idev].AnalogTagList[itag].ArrayList[iarray].Value);                 
                         }
+                        free(idx);
                     }
                     if(valid){
                         
@@ -456,6 +457,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload, char **json_ref){
                         char *idx = NULL;
                         asprintf(&idx, "%d", data.DeviceList[idev].DiscreteTagList[itag].ArrayList[iarray].Index);
                         cJSON_AddNumberToObject(subJson_node_array, idx, data.DeviceList[idev].DiscreteTagList[itag].ArrayList[iarray].Value);
+                        free(idx);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].DiscreteTagList[itag].Name, subJson_node_array);
                 }   
@@ -476,6 +478,7 @@ int SendDataMessage(TEDGE_DATA_STRUCT data, char **payload, char **json_ref){
                         char *idx = NULL;
                         asprintf(&idx, "%d", data.DeviceList[idev].TextTagList[itag].ArrayList[iarray].Index);
                         cJSON_AddStringToObject(subJson_node_array, idx, data.DeviceList[idev].TextTagList[itag].ArrayList[iarray].Value);
+                        free(idx);
                     }
                     cJSON_AddItemToObject(subJson_node_dev, data.DeviceList[idev].TextTagList[itag].Name, subJson_node_array);
                 }    

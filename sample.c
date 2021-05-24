@@ -219,68 +219,62 @@ int main(int argc, char *argv[]) {
     unsigned int discrete_sim_data = 0;
     char * text_sim_data = "iamtest";
 
-    while(1){
-        nsleep(1000); // send simulation per sec
-
-        for(int i = 0; i < device_num; i++){
-            for ( int j = 0; j < analog_tag_num; j++ ){
-                asprintf(&simTagName, "%s_%d", "TagName_ana", j);
-                analog_data_tag[j].Name = simTagName;
-	            analog_data_tag[j].Value = analog_sim_data;
-                /* array tag data */          
-                for(int k = 0; k< array_size; k++){
-                    analog_data_array_tag[k].Index = k;
-                    analog_data_array_tag[k].Value = analog_sim_data;
-                }
-                analog_data_tag[j].ArraySize = array_size;
-                analog_data_tag[j].ArrayList = analog_data_array_tag; 
+    for(int i = 0; i < device_num; i++){
+        for ( int j = 0; j < analog_tag_num; j++ ){
+            asprintf(&simTagName, "%s_%d", "TagName_ana", j);
+            analog_data_tag[j].Name = simTagName;
+            analog_data_tag[j].Value = analog_sim_data;
+            /* array tag data */          
+            for(int k = 0; k< array_size; k++){
+                analog_data_array_tag[k].Index = k;
+                analog_data_array_tag[k].Value = analog_sim_data;
             }
-
-            for ( int j = 0; j < discrete_tag_num; j++ ){
-                asprintf(&simTagName, "%s_%d", "TagName_dis", j);
-                discrete_data_tag[j].Name = simTagName;
-	            discrete_data_tag[j].Value = discrete_sim_data;
-                /* array tag data */          
-                // for(int k = 0; k< array_size; k++){
-                //     analog_data_array_tag[k].Index = k;
-                //     analog_data_array_tag[k].Value = value;
-                // }
-                // analog_data_tag[j].ArraySize = array_size;
-                // analog_data_tag[j].ArrayList = analog_data_array_tag;
-            }
-            data_device[i].AnalogTagNumber = analog_tag_num;
-            data_device[i].AnalogTagList = analog_data_tag;
-
-            data_device[i].DiscreteTagNumber = discrete_tag_num;
-            data_device[i].DiscreteTagList = discrete_data_tag;
-
-            data_device[i].TextTagNumber = 0;
-
-            asprintf(&simDevId, "%s_%d", "DeviceID", i);
-            data_device[i].Id = simDevId;
+            analog_data_tag[j].ArraySize = array_size;
+            analog_data_tag[j].ArrayList = analog_data_array_tag; 
         }
-        data.DeviceNumber = device_num;
-        data.DeviceList = data_device;
-        //data.Time = "2020-04-21T09:47:03.633Z";  //%Y-%m-%dT%H:%M:%S.MSZ
-        
-        SendData(data);
 
-        /* data simulator */
-        if( analog_sim_data >= 1000 ){ 
-            analog_sim_data = 0; 
-        } else {
-            analog_sim_data++;
+        for ( int j = 0; j < discrete_tag_num; j++ ){
+            asprintf(&simTagName, "%s_%d", "TagName_dis", j);
+            discrete_data_tag[j].Name = simTagName;
+            discrete_data_tag[j].Value = discrete_sim_data;
+            /* array tag data */          
+            // for(int k = 0; k< array_size; k++){
+            //     analog_data_array_tag[k].Index = k;
+            //     analog_data_array_tag[k].Value = value;
+            // }
+            // analog_data_tag[j].ArraySize = array_size;
+            // analog_data_tag[j].ArrayList = analog_data_array_tag;
         }
-        if( discrete_sim_data >= 10 ){ 
-            discrete_sim_data = 0; 
-        } else {
-            discrete_sim_data++;
-        }
-        text_sim_data = randstring(6);
-        
+        data_device[i].AnalogTagNumber = analog_tag_num;
+        data_device[i].AnalogTagList = analog_data_tag;
+
+        data_device[i].DiscreteTagNumber = discrete_tag_num;
+        data_device[i].DiscreteTagList = discrete_data_tag;
+
+        data_device[i].TextTagNumber = 0;
+
+        asprintf(&simDevId, "%s_%d", "DeviceID", i);
+        data_device[i].Id = simDevId;
     }
+    data.DeviceNumber = device_num;
+    data.DeviceList = data_device;
+    //data.Time = "2020-04-21T09:47:03.633Z";  //%Y-%m-%dT%H:%M:%S.MSZ
+    
+    SendData(data);
 
- 
+    /* data simulator */
+    if( analog_sim_data >= 1000 ){ 
+        analog_sim_data = 0; 
+    } else {
+        analog_sim_data++;
+    }
+    if( discrete_sim_data >= 10 ){ 
+        discrete_sim_data = 0; 
+    } else {
+        discrete_sim_data++;
+    }
+    text_sim_data = randstring(6);
+
     
 /* release */
     free(device);
